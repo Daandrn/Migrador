@@ -39,6 +39,20 @@ const showingNavigationDropdown = ref(false);
                                 >
                                     Dashboard
                                 </NavLink>
+
+                                <NavLink
+                                    :href="route('clientes.mostrar')"
+                                    :active="route().current('clientes.mostrar')"
+                                >
+                                    Clientes
+                                </NavLink>
+
+                                <NavLink
+                                    :href="route('checks.mostrar')"
+                                    :active="route().current('checks.mostrar')"
+                                >
+                                    Checks
+                                </NavLink>
                             </div>
                         </div>
 
@@ -165,14 +179,14 @@ const showingNavigationDropdown = ref(false);
 
                         <div class="mt-3 space-y-1">
                             <ResponsiveNavLink :href="route('profile.edit')">
-                                Profile
+                                Perfil
                             </ResponsiveNavLink>
                             <ResponsiveNavLink
                                 :href="route('logout')"
                                 method="post"
                                 as="button"
                             >
-                                Log Out
+                                Sair
                             </ResponsiveNavLink>
                         </div>
                     </div>
