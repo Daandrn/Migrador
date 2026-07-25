@@ -3,18 +3,19 @@
 namespace App\Http\Controllers\Web;
 
 use App\Http\Controllers\Controller;
-use App\Models\Clientes;
+use App\Models\Client;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Inertia\Response;
 
-class ClientePageController extends Controller
+class ClientPageController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(): Response
     {  
-        return Inertia::render('Clientes/Clientes');
+        return Inertia::render('Client/Client');
     }
 
     /**
@@ -36,7 +37,7 @@ class ClientePageController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Clientes $clientes)
+    public function show(Client $client)
     {
         //
     }
@@ -44,7 +45,7 @@ class ClientePageController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(Clientes $clientes)
+    public function edit(Client $client)
     {
         //
     }
@@ -52,7 +53,7 @@ class ClientePageController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Clientes $clientes)
+    public function update(Request $request, Client $client)
     {
         //
     }
@@ -60,7 +61,7 @@ class ClientePageController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Clientes $clientes)
+    public function destroy(Client $client)
     {
         //
     }

@@ -1,7 +1,7 @@
 <?php
 
 use App\Http\Controllers\Web\{
-    ClientePageController,
+    ClientPageController,
     CheckPageController,
 };
 use App\Http\Controllers\ProfileController;
@@ -19,13 +19,13 @@ Route::get('/dashboard', function () {
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
-    Route::get('/clientes', [ClientePageController::class, 'index'])->name('clientes.mostrar');
+    Route::get('/clientes', [ClientPageController::class, 'index'])->name('clients');
 
-    Route::get('/checks', [CheckPageController::class, 'index'])->name('checks.mostrar');
+    Route::get('/checagens', [CheckPageController::class, 'index'])->name('checks');
     
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
 });
 
 require __DIR__.'/auth.php';

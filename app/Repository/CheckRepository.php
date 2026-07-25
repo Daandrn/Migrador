@@ -2,8 +2,9 @@
 
 namespace App\Repository;
 
-use App\DTO\InsertCheckDto;
-use App\DTO\UpdateCheckDto;
+use App\DTO\Check\CheckDto;
+use App\DTO\Check\InsertCheckDto;
+use App\DTO\Check\UpdateCheckDto;
 use App\Models\Check;
 
 class CheckRepository
@@ -14,9 +15,17 @@ class CheckRepository
         //
     }
 
-    public function insert(InsertCheckDto $data): bool
+    public function create(InsertCheckDto $data): CheckDto
     {
-        return $this->check->save($data->toArray());
+        $createdCheck = $this->check->create($data->toArray());
+        
+        return CheckDto::make(
+            $createdCheck->id,
+            $createdCheck->description,
+            $createdCheck->type_id,
+            $createdCheck->sql_query,
+            $createdCheck->active,
+        );
     }
 
     public function update(UpdateCheckDto $data): bool
@@ -26,18 +35,25 @@ class CheckRepository
         return $check->update($data->toArray());
     }
 
-    public function buscar(?array $tipos): array
+    public function getChecks(?array $types): array
     {
-        $query = $this->check
-            ->query()
-            ->join('verify_types', 'checks.tipo_id', '=', 'verify_types.id')
-            ->when(!empty($tipos), function ($query) use ($tipos) {
-                $query->whereIn('tipo_id', $tipos);
-            });
+        $check = $this->check
+            ->select([
+                'checks.id',
+                'checks.description',
+                'checks.type_id',
+                'checks.sql_query',
+                'checks.active',
+                'verify_types.description as description_type',
+            ])
+            ->join('verify_types', 'checks.type_id', '=', 'verify_types.id')
+            ->when(!empty($types), function ($query) use ($types) {
+                $query->whereIn('type_id', $types);
+            })
+            ->orderBy('checks.type_id', 'asc')
+            ->orderBy('checks.id', 'desc');
         
-        return $query->get(
-                ['checks.id', 'checks.descricao', 'checks.tipo_id', 'checks.consulta_sql', 'checks.ativo', 'verify_types.descricao as descricao_tipo']
-            )
+        return $check->get()
             ->toArray();
     }
 

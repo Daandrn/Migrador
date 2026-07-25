@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Http\Requests\Api\Checks;
+namespace App\Http\Requests\Api\Client;
 
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
-class UpdateCheckRequest extends FormRequest
+class StoreClientRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -23,10 +23,13 @@ class UpdateCheckRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'descricao' => 'required|string',
-            'tipo_id' => 'required|integer',
-            'consulta_sql' => 'required|string',
-            'ativo' => 'required|boolean',
+            'host'     => 'required|string',
+            'port'     => 'required|numeric',
+            'user'     => 'required|string',
+            'password' => 'required|string',
+            'db_name'  => 'required|string',
+            'driver'   => 'required|string',
+            'active'   => 'required|bool',
         ];
     }
 }

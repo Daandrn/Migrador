@@ -14,34 +14,35 @@ return new class extends Migration
     {
         Schema::create('verify_types', function (Blueprint $table) {
             $table->id();
-            $table->text('descricao')->nullable(false);
+            $table->text('description')->nullable(false);
+            $table->boolean('active')->nullable(false)->default(true);
             $table->timestamps();
         });
 
         DB::table('verify_types')->insert([
             [
                 'id' => 1,
-                'descricao' => 'Compras',
+                'description' => 'Compras',
             ],
             [
                 'id' => 2,
-                'descricao' => 'Licitação',
+                'description' => 'Licitação',
             ],
             [
                 'id' => 3,
-                'descricao' => 'Contratos',
+                'description' => 'Contratos',
             ],
         ]);
         
         Schema::create('errors', function (Blueprint $table) {
             $table->id();
             $table->text('data')->nullable(false);
-            $table->integer('tipo_id')->nullable(false);
+            $table->integer('type_id')->nullable(false);
             $table->timestamps();
 
-            $table->index('tipo_id');
+            $table->index('type_id');
 
-            $table->foreign('tipo_id')->references('id')->on('verify_types')->onDelete('restrict');
+            $table->foreign('type_id')->references('id')->on('verify_types')->onDelete('restrict');
         });
     }
 

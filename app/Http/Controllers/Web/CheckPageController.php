@@ -6,15 +6,16 @@ use App\Http\Controllers\Controller;
 use App\Models\Check;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Inertia\Response;
 
 class CheckPageController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(): Response
     {  
-        return Inertia::render('Checks/Checks');
+        return Inertia::render('Check/Check');
     }
 
     /**

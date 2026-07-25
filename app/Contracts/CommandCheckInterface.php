@@ -4,11 +4,11 @@ namespace App\Contracts;
 
 interface CommandCheckInterface
 {
-    public function adicionar(string $check);
-    public function executar();
+    public function add(string $check);
+    public function execute();
 
     /**
      * @param string[] $data
      */
-    public function buscarErros(?array $data);
+    public function getErrors(?array $data);
 }

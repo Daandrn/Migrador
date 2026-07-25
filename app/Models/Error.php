@@ -13,7 +13,7 @@ use Illuminate\Database\Eloquent\Model;
 )]
 #[Fillable([
     'data',
-    'tipo_id',
+    'type_id',
 ])]
 class Error extends Model
 {

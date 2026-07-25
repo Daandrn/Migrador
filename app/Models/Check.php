@@ -12,10 +12,10 @@ use Illuminate\Database\Eloquent\Model;
     key: 'id'
 )]
 #[Fillable([
-    'descricao',
-    'tipo_id',
-    'consulta_sql',
-    'ativo',
+    'description',
+    'type_id',
+    'sql_query',
+    'active',
 ])]
 class Check extends Model
 {

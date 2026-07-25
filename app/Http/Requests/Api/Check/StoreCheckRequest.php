@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Requests\Api\Checks;
+namespace App\Http\Requests\Api\Check;
 
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
@@ -12,7 +12,7 @@ class StoreCheckRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -23,7 +23,10 @@ class StoreCheckRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            'description' => 'required|string',
+            'type_id'     => 'required|integer',
+            'sql_query'   => 'required|string',
+            'active'      => 'required|boolean',
         ];
     }
 }

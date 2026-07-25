@@ -2,7 +2,8 @@
 
 use App\Http\Controllers\Api\{
     CheckController,
-    ClientesController,
+    ClientController,
+    VerifyTypeController,
 };
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -13,14 +14,19 @@ Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');
 
-Route::get('clientes', [ClientesController::class, 'index'])->name('clientes.index');
-Route::put('clientes/{id}', [ClientesController::class, 'update'])->name('clientes.update');
-Route::delete('clientes/{id}', [ClientesController::class, 'destroy'])->name('clientes.destroy');
+Route::delete('clients/{id}', [ClientController::class, 'destroy'])->name('api.clients.destroy');
+Route::put('clients/{id}', [ClientController::class, 'update'])->name('api.clients.update');
+Route::post('clients/create', [ClientController::class, 'store'])->name('api.clients.insert');
+Route::get('clients', [ClientController::class, 'getAll'])->name('api.clients');
 
-Route::get('testes', [CheckController::class, 'init'])->name('checks.init');
-Route::get('checks', [CheckController::class, 'index'])->name('checks.index');
-Route::put('checks/{id}', [CheckController::class, 'update'])->name('checks.update');
-Route::delete('checks/{id}', [CheckController::class, 'destroy'])->name('checks.destroy');
+Route::get('testes', [CheckController::class, 'init'])->name('api.checks.init');
+
+Route::delete('checks/{id}', [CheckController::class, 'destroy'])->name('api.checks.destroy');
+Route::put('checks/{id}', [CheckController::class, 'update'])->name('api.checks.update');
+Route::post('checks/create', [CheckController::class, 'store'])->name('api.checks.insert');
+Route::get('checks', [CheckController::class, 'getAll'])->name('api.checks');
+
+Route::get('verify-types', [VerifyTypeController::class, 'getAll'])->name('api.verifyTypes');
 
 Route::middleware('auth:sanctum')->group(function () {
     //

@@ -41,17 +41,17 @@ const showingNavigationDropdown = ref(false);
                                 </NavLink>
 
                                 <NavLink
-                                    :href="route('clientes.mostrar')"
-                                    :active="route().current('clientes.mostrar')"
+                                    :href="route('clients')"
+                                    :active="route().current('clients')"
                                 >
                                     Clientes
                                 </NavLink>
 
                                 <NavLink
-                                    :href="route('checks.mostrar')"
-                                    :active="route().current('checks.mostrar')"
+                                    :href="route('checks')"
+                                    :active="route().current('checks')"
                                 >
-                                    Checks
+                                    Chacagens
                                 </NavLink>
                             </div>
                         </div>
@@ -159,6 +159,24 @@ const showingNavigationDropdown = ref(false);
                             :active="route().current('dashboard')"
                         >
                             Dashboard
+                        </ResponsiveNavLink>
+                    </div>
+
+                    <div class="space-y-1 pb-3 pt-2">
+                        <ResponsiveNavLink
+                            :href="route('clients')"
+                            :active="route().current('clients')"
+                        >
+                            Clientes
+                        </ResponsiveNavLink>
+                    </div>
+
+                    <div class="space-y-1 pb-3 pt-2">
+                        <ResponsiveNavLink
+                            :href="route('checks')"
+                            :active="route().current('checks')"
+                        >
+                            Checagens
                         </ResponsiveNavLink>
                     </div>
 

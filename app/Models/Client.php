@@ -8,19 +8,19 @@ use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 #[Table(
-    'clientes', 
+    'clients', 
     key: 'id'
 )]
 #[Fillable([
     'host',
-    'porta',
-    'usuario',
-    'senha',
-    'nome_banco',
-    'drive',
-    'ativo',
+    'port',
+    'user',
+    'password',
+    'db_name',
+    'driver',
+    'active',
 ])]
-class Clientes extends Model
+class Client extends Model
 {
     /** @use HasFactory<\Database\Factories\CheckFactory> */
     use HasFactory;

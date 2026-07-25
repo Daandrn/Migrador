@@ -3,8 +3,8 @@
 namespace App\Checks;
 
 use App\Contracts\CommandCheckInterface;
-use App\Http\Controllers\Api\ClientesController;
-use App\Models\Clientes;
+use App\Http\Controllers\Api\ClientController;
+use App\Models\Client;
 use App\Repository\ErrorRepository;
 use Illuminate\Database\Connection;
 use Exception;
@@ -15,26 +15,26 @@ class CommandCheck implements CommandCheckInterface
      * @var string[] $sqlChecks
      */
     protected array $sqlChecks = [];
-    protected Connection $clienteConnection;
+    protected Connection $clientConnection;
 
     public function __construct(
         protected ErrorRepository $errorRepository,
-        protected Clientes $clientes,
+        protected Client $client,
     ) {
         //
     }
     
-    public function adicionar(string $sqlCheck)
+    public function add(string $sqlCheck)
     {
         $this->sqlChecks[] = $sqlCheck;
         
         return;
     }
 
-    public function executar()
+    public function execute()
     {
-        ClientesController::clienteConfigConnection($this->clientes);
-        $this->clienteConnection = ClientesController::clienteConnection($this->clientes);
+        ClientController::clientConfigConnection($this->client);
+        $this->clientConnection = ClientController::clientConnection($this->client);
         
         foreach ($this->sqlChecks as $check) {
             $sql = trim($check);
@@ -43,15 +43,15 @@ class CommandCheck implements CommandCheckInterface
                 throw new Exception('Múltiplos comandos não são permitidos.');
             }
 
-           if (!$this->executarNoCliente($check)) {
+           if (!$this->executeInClient($check)) {
                 throw new Exception('Não foi possível gravar o registro.');
            }
         };
     }
 
-    protected function executarNoCliente(string $consulta_sql): true
+    protected function executeInClient(string $sql_query): true
     {
-        $data = $this->clienteConnection->select(trim($consulta_sql));
+        $data = $this->clientConnection->select(trim($sql_query));
 
         if (empty($data)) {
             throw new Exception('Não foram localizados registros para serem lançados.');
@@ -59,9 +59,9 @@ class CommandCheck implements CommandCheckInterface
 
         
         foreach ($data as $item) {
-            $gravou = $this->errorRepository->gravar($item);
+            $saved = $this->errorRepository->create($item);
 
-            if (!$gravou) {
+            if (!$saved) {
                 throw new Exception('Não foi possível gravar o registro: ' . json_encode($item));
             }
         }
@@ -70,10 +70,10 @@ class CommandCheck implements CommandCheckInterface
     }
 
     /**
-     * @param string[] $tipos 
+     * @param string[] $types 
      */
-    public function buscarErros(?array $tipos = null): array
+    public function getErrors(?array $types = null): array
     { 
-        return $this->errorRepository->buscar($tipos);
+        return $this->errorRepository->get($types);
     }
 }

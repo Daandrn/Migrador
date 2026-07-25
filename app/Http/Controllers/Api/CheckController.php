@@ -3,11 +3,12 @@
 namespace App\Http\Controllers\Api;
 
 use App\Checks\CommandCheck;
-use App\DTO\InsertCheckDto;
-use App\DTO\UpdateCheckDto;
+use App\DTO\Check\InsertCheckDto;
+use App\DTO\Check\UpdateCheckDto;
 use App\Helpers\NormalizeSql;
-use App\Http\Requests\Api\Checks\StoreCheckRequest;
-use App\Http\Requests\Api\Checks\UpdateCheckRequest;
+use App\Http\Controllers\Controller;
+use App\Http\Requests\Api\Check\StoreCheckRequest;
+use App\Http\Requests\Api\Check\UpdateCheckRequest;
 use App\Models\{
     Check,
 };
@@ -15,7 +16,7 @@ use App\Repository\CheckRepository;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 
-class CheckController
+class CheckController extends Controller
 {
     public function __construct(
         protected CommandCheck $commandCheck,
@@ -25,25 +26,34 @@ class CheckController
         //
     }
 
-    public function index(): JsonResponse
+    public function getAll(): JsonResponse
     {
-        $checks = $this->checkRepository->buscar(null);
+        $checks = $this->checkRepository->getChecks(null);
 
         return response()
             ->json($checks);
     }
 
-    public function store(StoreCheckRequest $request): bool
+    public function store(StoreCheckRequest $request)
     {
-        return $this->checkRepository->insert(InsertCheckDto::make($request));
+        $this->checkRepository->create(
+            InsertCheckDto::make($request)
+        );
+
+        return response()
+            ->json([
+                'errors' => [
+                    'description' => 'nada para voce aqui',
+                ],
+            ]);
     }
 
     public function update(UpdateCheckRequest $request): bool
     {
         $request->merge([
-            'consulta_sql' => NormalizeSql::make($request->consulta_sql),
-            'descricao' => trim($request->input('descricao')),
-            'tipo' => trim($request->input('tipo')),
+            'sql_query' => NormalizeSql::make($request->sql_query),
+            'description' => trim($request->input('description')),
+            'type_id' => trim($request->input('type_id')),
         ]);
         
         return $this->checkRepository->update(UpdateCheckDto::make($request));
@@ -60,12 +70,12 @@ class CheckController
             $this->check
                 ->All()
                 ->each(function ($check) {
-                    $this->commandCheck->adicionar($check->consulta_sql);
+                    $this->commandCheck->add($check->sql_query);
                 });
 
             DB::beginTransaction();
 
-            $this->commandCheck->executar();
+            $this->commandCheck->execute();
 
             DB::commit();
 
@@ -73,7 +83,7 @@ class CheckController
             ->json([
                 'message' => 'Verificações concluídas!',
                 'error' => false,
-                'data' => json_encode($this->commandCheck->buscarErros())
+                'data' => json_encode($this->commandCheck->getErrors())
             ]);
         } catch (\Throwable $error) {
             DB::rollBack();
@@ -82,7 +92,7 @@ class CheckController
                 ->json([
                     'message' => 'Falha ao realizar verificações: ' . json_encode($error->getMessage()),
                     'error' => true,
-                    'data' => null
+                    'data' => []
                 ]);
         }
     }

@@ -13,15 +13,15 @@ return new class extends Migration
     {
         Schema::create('checks', function (Blueprint $table) {
             $table->id();
-            $table->string('descricao', 100)->nullable(false);
-            $table->integer('tipo_id')->nullable(false);
-            $table->text('consulta_sql')->nullable(false);
-            $table->boolean('ativo')->nullable(false)->default(true);
+            $table->string('description', 100)->nullable(false);
+            $table->integer('type_id')->nullable(false);
+            $table->text('sql_query')->nullable(false);
+            $table->boolean('active')->nullable(false)->default(true);
             $table->timestamps();
 
-            $table->index('tipo_id');
+            $table->index('type_id');
 
-            $table->foreign('tipo_id')->references('id')->on('verify_types')->onDelete('restrict');
+            $table->foreign('type_id')->references('id')->on('verify_types')->onDelete('restrict');
         });
     }
 
