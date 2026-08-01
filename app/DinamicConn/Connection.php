@@ -11,19 +11,19 @@ class Connection
     public function make(Client $client): void
     {
         Config::set('database.connections.origem', [
-            'driver' => $client->driver,
-            'host' => $client->host,
-            'port' => $client->port,
+            'driver'   => $client->driver,
+            'host'     => $client->host,
+            'port'     => $client->port,
             'database' => $client->db_name,
             'username' => $client->user,
             'password' => $client->password,
-            'charset' => 'utf8',
-            'prefix' => '',
-            'schema' => 'public',
-            'sslmode' => 'prefer',
+            'charset'  => 'utf8',
+            'prefix'   => '',
+            'schema'   => 'public',
+            'sslmode'  => 'prefer',
         ]);
 
-        DB::purge('origem');
-        DB::reconnect('origem');
+        DB::purge(name: 'origem');
+        DB::reconnect(name: 'origem');
     }
 }

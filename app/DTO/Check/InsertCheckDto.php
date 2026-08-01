@@ -18,10 +18,10 @@ readonly class InsertCheckDto
     public static function make(StoreCheckRequest $request): self
     {
         return new self(
-            $request->description,
-            $request->type_id,
-            $request->sql_query,
-            $request->active,
+            description: $request->description,
+            type_id: $request->type_id,
+            sql_query: $request->sql_query,
+            active: $request->active,
         );
     }
 

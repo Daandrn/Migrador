@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\VerifyType;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class VerifyTypeController extends Controller
 {
@@ -14,11 +15,14 @@ class VerifyTypeController extends Controller
         //
     }
     
-    public function getAll(): JsonResponse
+    public function get(Request $request): JsonResponse
     {
-        $verifyTypes = $this->verifyType->where('active', true)->orderBy('description')->get();
+        $verifyTypes = $this->verifyType
+            ->where('active', true)
+            ->orderBy('description')
+            ->get();
 
         return response()
-            ->json($verifyTypes->toArray());
+            ->json(data: $verifyTypes->toArray());
     }
 }

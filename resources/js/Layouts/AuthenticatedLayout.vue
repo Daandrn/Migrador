@@ -41,6 +41,13 @@ const showingNavigationDropdown = ref(false);
                                 </NavLink>
 
                                 <NavLink
+                                    :href="route('verifyErrors')"
+                                    :active="route().current('verifyErrors')"
+                                >
+                                    Erros
+                                </NavLink>
+
+                                <NavLink
                                     :href="route('clients')"
                                     :active="route().current('clients')"
                                 >
@@ -51,7 +58,7 @@ const showingNavigationDropdown = ref(false);
                                     :href="route('checks')"
                                     :active="route().current('checks')"
                                 >
-                                    Chacagens
+                                    Checagens
                                 </NavLink>
                             </div>
                         </div>

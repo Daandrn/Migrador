@@ -21,13 +21,13 @@ readonly class InsertClientDto
     public static function make(StoreClientRequest $request): self
     {
         return new self(
-            $request->host,
-            $request->port,
-            $request->user,
-            $request->password,
-            $request->db_name,
-            $request->driver,
-            $request->active,
+            host: $request->host,
+            port: $request->port,
+            user: $request->user,
+            password: $request->password,
+            db_name: $request->db_name,
+            driver: $request->driver,
+            active: $request->active,
         );
     }
 

@@ -20,11 +20,11 @@ class CheckRepository
         $createdCheck = $this->check->create($data->toArray());
         
         return CheckDto::make(
-            $createdCheck->id,
-            $createdCheck->description,
-            $createdCheck->type_id,
-            $createdCheck->sql_query,
-            $createdCheck->active,
+            id: $createdCheck->id,
+            description: $createdCheck->description,
+            type_id: $createdCheck->type_id,
+            sql_query: $createdCheck->sql_query,
+            active: $createdCheck->active,
         );
     }
 
@@ -57,7 +57,7 @@ class CheckRepository
             ->toArray();
     }
 
-    public function delete(int $id)
+    public function delete(int $id): bool
     {
         $check = $this->check->findOrFail($id);
         

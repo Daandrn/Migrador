@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\{
     CheckController,
     ClientController,
+    VerifyErrorController,
     VerifyTypeController,
 };
 use Illuminate\Http\Request;
@@ -16,17 +17,21 @@ Route::get('/user', function (Request $request) {
 
 Route::delete('clients/{id}', [ClientController::class, 'destroy'])->name('api.clients.destroy');
 Route::put('clients/{id}', [ClientController::class, 'update'])->name('api.clients.update');
+Route::get('clients/{id}', [ClientController::class, 'userVerify'])->name('api.clients.UserVerify');
 Route::post('clients/create', [ClientController::class, 'store'])->name('api.clients.insert');
-Route::get('clients', [ClientController::class, 'getAll'])->name('api.clients');
+Route::get('clients', [ClientController::class, 'get'])->name('api.clients');
 
-Route::get('testes', [CheckController::class, 'init'])->name('api.checks.init');
 
 Route::delete('checks/{id}', [CheckController::class, 'destroy'])->name('api.checks.destroy');
 Route::put('checks/{id}', [CheckController::class, 'update'])->name('api.checks.update');
 Route::post('checks/create', [CheckController::class, 'store'])->name('api.checks.insert');
-Route::get('checks', [CheckController::class, 'getAll'])->name('api.checks');
+Route::get('checks', [CheckController::class, 'get'])->name('api.checks');
+Route::get('checks/executar', [CheckController::class, 'init'])->name('api.checks.init');
 
-Route::get('verify-types', [VerifyTypeController::class, 'getAll'])->name('api.verifyTypes');
+Route::delete('verificacao/erros', [VerifyErrorController::class, 'destroy'])->name('api.verifyErrors.destroy');
+Route::get('verificacao/erros', [VerifyErrorController::class, 'get'])->name('api.verifyErrors');
+
+Route::get('verificacao/tipos', [VerifyTypeController::class, 'get'])->name('api.verifyTypes');
 
 Route::middleware('auth:sanctum')->group(function () {
     //

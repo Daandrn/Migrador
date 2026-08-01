@@ -34,7 +34,7 @@ return new class extends Migration
             ],
         ]);
         
-        Schema::create('errors', function (Blueprint $table) {
+        Schema::create('verify_errors', function (Blueprint $table) {
             $table->id();
             $table->text('data')->nullable(false);
             $table->integer('type_id')->nullable(false);
@@ -51,7 +51,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('errors');
+        Schema::dropIfExists('verify_errors');
         Schema::dropIfExists('verify_types');
     }
 };

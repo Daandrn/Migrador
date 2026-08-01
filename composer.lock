@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "fa54af2438beddc24a145bc040412171",
+    "content-hash": "bc2b8d17f6348dd0e3691f1105a62985",
     "packages": [
         {
             "name": "brick/math",
@@ -1343,6 +1343,54 @@
                 "source": "https://github.com/inertiajs/inertia-laravel/tree/v2.0.24"
             },
             "time": "2026-04-10T14:36:44+00:00"
+        },
+        {
+            "name": "kodus/sql-split",
+            "version": "2.1.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/kodus/sql-split.git",
+                "reference": "8c0710bb54e086aa1597b35f3bb449f22a329f3c"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/kodus/sql-split/zipball/8c0710bb54e086aa1597b35f3bb449f22a329f3c",
+                "reference": "8c0710bb54e086aa1597b35f3bb449f22a329f3c",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=8.0"
+            },
+            "require-dev": {
+                "codeception/codeception": "^4.2",
+                "codeception/module-asserts": "^2.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Kodus\\SQLSplit\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Rasmus Schultz",
+                    "email": "rasmus@mindplay.dk"
+                },
+                {
+                    "name": "Thomas Nordahl Pedersen",
+                    "email": "thno@jfmedier.dk"
+                }
+            ],
+            "description": "A simple facility to split SQL files into individual queries - supports MySQL and PostgreSQL",
+            "support": {
+                "issues": "https://github.com/kodus/sql-split/issues",
+                "source": "https://github.com/kodus/sql-split/tree/2.1.0"
+            },
+            "time": "2025-01-09T13:43:21+00:00"
         },
         {
             "name": "laravel/breeze",

@@ -29,14 +29,14 @@ readonly class ClientDto
     ): self
     {
         return new self(
-            $id,
-            $host,
-            $port,
-            $user,
-            $password,
-            $db_name,
-            $driver,
-            $active,
+            id: $id,
+            host: $host,
+            port: $port,
+            user: $user,
+            password: $password,
+            db_name: $db_name,
+            driver: $driver,
+            active: $active,
         );
     }
 

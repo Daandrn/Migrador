@@ -1,83 +1,73 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
-import ListCheckForm from '@/Pages/Check/Partials/ListCheckForm.vue';
 import { ref, onMounted } from 'vue'
 import { Head } from '@inertiajs/vue3';
 
-const checks = ref([]);
+const verifyErrors = ref([]);
 const loading = ref(false);
 const error = ref(null);
 
-async function loadChecks() {
+async function loadVerifyErrors() {
     try {
         loading.value = true;
         error.value = null;
 
-        const response = await axios.get(route('api.checks'));
+        const response = await axios.get(route('api.verifyErrors'));
 
-        checks.value = Array.isArray(response.data)
+        verifyErrors.value = Array.isArray(response.data)
             ? response.data
             : response.data.data ?? [];
     } catch (error) {
-        error.value = error.response?.data?.message ?? 'Erro ao carregar checagens.';
+        error.value = error.response?.data?.message ?? 'Erro ao carregar erros de checagem.';
         console.error(error);
     } finally {
         loading.value = false;
     }
 }
 
-async function updateCheck(check) {
-    try {
-        await axios.put(route('api.checks') + `/${check.id}`, check);
-
-        alert('Check atualizado com sucesso!');
-    } catch (error) {
-        console.error(error);
-        alert(error.response?.data?.message ?? 'Erro ao atualizar Check.');
-    }
-}
-
-async function deleteCheck(check) {
-    if (!confirm(`Deseja realmente excluir o check ${check.id} - ${check.description}?`)) {
+async function deleteError(verifyError) {
+    if (!confirm(`Deseja realmente excluir o erro de checagem - Estudar o que colocar aqui?`)) {
         return;
     }
 
     try {
-        const response = await axios.delete(route('api.checks.destroy', check.id));
+        const ids = new Array;
+        ids.push(verifyError.id);
+        
+        const response = await axios.delete(route('api.verifyErrors.destroy'), {
+            data: {
+                ids: ids
+            }
+        });
 
-        checks.value = checks.value.filter(item => item.id !== check.id);
+        verifyErrors.value = verifyErrors.value.filter(item => item.id !== verifyError.id);
         alert(response?.data?.message);
     } catch (error) {
         console.error(error);
-        alert(error.response?.data?.message ?? 'Erro ao excluir check.');
+        alert(error.response?.data?.message ?? 'Erro ao excluir erro de checagem.');
     }
 }
 
 onMounted(() => {
-    loadChecks();
+    loadVerifyErrors();
 });
 
 </script>
 
 <template>
-    <Head title="Checagens" />
+    <Head title="Erros em Checagens" />
 
     <AuthenticatedLayout>
         <template #header>
             <h2
                 class="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200"
             >
-                Checagens
+                Erros em Checagens
             </h2>
         </template>
 
         <div class="py-12">
             <div class="mx-auto max-w-7xl space-y-6 sm:px-6 lg:px-8">
-                <div class="bg-white p-4 shadow sm:rounded-lg sm:p-8 dark:bg-gray-800">
-                    <ListCheckForm 
-                        @check-saved="loadChecks" 
-                    />
-                </div>
 
                 <div class="overflow-hidden bg-white shadow-sm sm:rounded-lg dark:bg-gray-800">
 
@@ -107,19 +97,11 @@ onMounted(() => {
                                     </th>
 
                                     <th class="px-3 py-3 text-left text-xs font-medium uppercase tracking-wider">
-                                        Descrição
+                                        Dados do erro
                                     </th>
 
                                     <th class="px-3 py-3 text-left text-xs font-medium uppercase tracking-wider">
                                         Tipo
-                                    </th>
-
-                                    <th class="px-3 py-3 text-left text-xs font-medium uppercase tracking-wider">
-                                        Consulta SQL
-                                    </th>
-
-                                    <th class="px-3 py-3 text-left text-xs font-medium uppercase tracking-wider">
-                                        Ativo
                                     </th>
 
                                     <th class="px-3 py-3 text-left text-xs font-medium uppercase tracking-wider">
@@ -129,45 +111,30 @@ onMounted(() => {
                             </thead>
 
                             <tbody 
-                                v-if="checks.length"
+                                v-if="verifyErrors.length"
                                 class="divide-y divide-gray-200 dark:divide-gray-700"
                             >
                                 <tr
-                                    v-for="check in checks"
-                                    :key="check.id"
+                                    v-for="verifyError in verifyErrors"
+                                    :key="verifyError.id"
                                 >
                                     <td class="whitespace-nowrap px-3 py-3">
-                                        {{ check.id }}
-                                    </td>
-
-                                    <td class="min-w-64 px-3 py-3">
-                                        <input
-                                            v-model="check.description"
-                                            type="text"
-                                            class="w-full rounded-md border-gray-300 bg-white text-gray-900 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
-                                        >
-                                    </td>
-
-                                    <td class="whitespace-nowrap px-3 py-3">
-                                        {{ check.description_type ?? check.type?.description ?? check.type_id }}
+                                        {{ verifyError.id }}
                                     </td>
 
                                     <td class="min-w-96 px-3 py-3">
                                         <textarea
-                                            v-model="check.sql_query"
+                                            v-model="verifyError.data"
                                             rows="3"
                                             class="w-full rounded-md border-gray-300 bg-white font-mono text-sm text-gray-900 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
-                                            spellcheck="false"
+                                            spellerror="false"
                                         />
                                     </td>
 
-                                    <td class="whitespace-nowrap px-3 py-3 text-center">
-                                        <input
-                                            v-model="check.active"
-                                            type="checkbox"
-                                            class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500"
-                                        >
+                                    <td class="whitespace-nowrap px-3 py-3">
+                                        {{ verifyError.description_type ?? verifyError.type?.description ?? verifyError.type_id }}
                                     </td>
+
 
                                     <td class="whitespace-nowrap px-3 py-3">
                                         <div 
@@ -175,17 +142,8 @@ onMounted(() => {
                                         >
                                             <button
                                                 type="button"
-                                                :disabled="check.saving"
-                                                class="rounded bg-blue-600 px-3 py-1 text-white hover:bg-blue-700"
-                                                @click="updateCheck(check)"
-                                            >
-                                                Alterar
-                                            </button>
-
-                                            <button
-                                                type="button"
                                                 class="rounded bg-red-600 px-3 py-1 text-white hover:bg-red-700"
-                                                @click="deleteCheck(check)"
+                                                @click="deleteError(verifyError)"
                                             >
                                                 Excluir
                                             </button>
@@ -197,7 +155,7 @@ onMounted(() => {
                             <tbody v-else>
                                 <tr>
                                     <td colspan="6" class="px-3 py-6 text-center text-gray-500 dark:text-gray-400">
-                                        Nenhuma checagem encontrada.
+                                        Nenhum erro de checagem encontrado.
                                     </td>
                                 </tr>
                             </tbody>

@@ -20,14 +20,14 @@ readonly class CheckDto
         int    $type_id,
         string $sql_query,
         bool   $active,
-    ): self
+    ): self 
     {
         return new self(
-            $id,
-            $description,
-            $type_id,
-            $sql_query,
-            $active,
+            id: $id,
+            description: $description,
+            type_id: $type_id,
+            sql_query: $sql_query,
+            active: $active,
         );
     }
 

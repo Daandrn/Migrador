@@ -15,7 +15,7 @@ class CheckPageController extends Controller
      */
     public function index(): Response
     {  
-        return Inertia::render('Check/Check');
+        return Inertia::render(component: 'Check/Check');
     }
 
     /**

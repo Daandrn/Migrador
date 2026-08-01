@@ -37,16 +37,33 @@ async function updateClient(client) {
     }
 }
 
+async function verifyUserClient(client) {
+    try {
+        const response = await axios.get(route('api.clients.UserVerify', client.id));
+
+        if (response.data.error) {
+            alert(response.data.message);
+            return;
+        }
+
+        alert('Usuário do cliente foi verificado e possui a permissão necessária!');
+    } catch (error) {
+        console.error(error);
+        alert(error.response?.data?.message ?? 'Erro ao verificar usuário do cliente.');
+    }
+}
+
 async function deleteClient(client) {
     if (!confirm(`Deseja realmente excluir o cliente ${client.id} - ${client.db_name} - ${client.host}?`)) {
         return;
     }
 
     try {
-        await axios.delete(route('api.clients.destroy', client.id));
-
+        const response = await axios.delete(route('api.clients.destroy', client.id));
 
         clients.value = clients.value.filter(item => item.id !== client.id);
+
+        alert(response?.data?.message);
     } catch (error) {
         console.error(error);
         alert(error.response?.data?.message ?? 'Erro ao excluir cliente.');
@@ -223,6 +240,14 @@ onMounted(() => {
                                                 @click="updateClient(client)"
                                             >
                                                 Alterar
+                                            </button>
+
+                                            <button
+                                                type="button"
+                                                class="rounded bg-green-600 px-3 py-1 text-white hover:bg-green-700"
+                                                @click="verifyUserClient(client)"
+                                            >
+                                                Verificar Usuário
                                             </button>
 
                                             <button

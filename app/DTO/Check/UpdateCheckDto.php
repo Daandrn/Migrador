@@ -19,11 +19,11 @@ readonly class UpdateCheckDto
     public static function make(UpdateCheckRequest $request): self
     {
         return new self(
-            $request->id,
-            $request->description,
-            $request->type_id,
-            $request->sql_query,
-            $request->active,
+            id: $request->id,
+            description: $request->description,
+            type_id: $request->type_id,
+            sql_query: $request->sql_query,
+            active: $request->active,
         );
     }
 

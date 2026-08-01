@@ -3,20 +3,20 @@
 namespace App\Http\Controllers\Api;
 
 use App\DTO\Client\InsertClientDto;
-use App\Exceptions\EmptyClientsException;
+use App\DTO\Client\UpdateClientDto;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\Client\StoreClientRequest;
 use App\Http\Requests\Api\Client\UpdateClientRequest;
-use App\Models\Client;
-use Illuminate\Database\Connection;
+use App\Service\ClientService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Config;
 
 class ClientController extends Controller
 {
     public function __construct(
-        protected Client $client,
+        protected ClientService $service,
+        protected ClientService $clientService,
     ) {
         //
     }   
@@ -24,27 +24,36 @@ class ClientController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function getAll(): JsonResponse
+    public function get(Request $request): JsonResponse
     {
         $active = (bool) true;
         
-        $client = $this->client
-            ->when(!empty($active), function ($query) use ($active) {
-                $query->where('active', '=', $active);
-            })
-            ->get()
-            ->toArray();
+        $clients = $this->service->get(onlyActives: $active);
 
         return response()
-            ->json($client);
+            ->json(data: $clients);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    public function userVerify(int $id): JsonResponse
     {
-        //
+        try {
+            $this->clientService->clientConnection(id: $id);
+            
+            $message = 'Usuário somente leitura, pode ser usado com segurança!';
+            $error   = false;
+            $data    = [];
+        } catch (\Throwable $error) {
+            $message = 'Erro durante a verificação do usuário: ' . $error->getMessage();
+            $error   = true;
+            $data    = [];
+        }
+
+        return Response()
+            ->json(data: [
+                'message' => $message,
+                'error'   => $error,
+                'data'    => $data
+            ]);
     }
 
     /**
@@ -52,12 +61,12 @@ class ClientController extends Controller
      */
     public function store(StoreClientRequest $request)
     {
-        $client = $this->client->create(
-            InsertClientDto::make($request)->toArray()
+        $client = $this->service->store(
+            dto: InsertClientDto::make(request: $request)
         );
 
         return response()
-            ->json([
+            ->json(data: [
                 'errors' => [
                     'description' => 'nada para voce aqui',
                 ],
@@ -66,32 +75,17 @@ class ClientController extends Controller
     }
 
     /**
-     * Display the specified resource.
-     */
-    public function show(Client $client)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Client $client)
-    {
-        //
-    }
-
-    /**
      * Update the specified resource in storage.
      */
     public function update(UpdateClientRequest $request, int $id)
     {
-        $client = $this->client->findOrFail($id);
-        
-        $client->update($request->all());
+        $client = $this->service->update(
+            dto: UpdateClientDto::make(request: $request),
+            id: $id
+        );
         
         return response()
-            ->json($client);
+            ->json(data: $client);
     }
 
     /**
@@ -99,47 +93,29 @@ class ClientController extends Controller
      */
     public function destroy(int $id)
     {
-        $client = $this->client->findOrFail($id);
-        
-        $client->delete();
+        try {
+            DB::beginTransaction();
+            
+            $this->service->delete(id: $id);
 
-        return response()
-            ->noContent();
-    }
+            DB::commit();
 
-    public static function clientConfigConnection(Client $client): void
-    {
-        $client = $client->query()
-            ->where('id', 1)
-            ->first();
+            $message = 'Cliente excluído com sucesso!';
+            $error   = false;
+            $data    = [];
+        } catch (\Throwable $error) {
+            DB::rollBack();
+            
+            $message = 'Erro ao excluir cliente: ' . $error->getMessage();
+            $error   = true;
+            $data    = [];
+        }
 
-        empty($client)
-            ? throw new EmptyClientsException('Não há cliente cadastrado para os parametros. Verique!')
-            : null;
-
-        Config::set('database.connections.origem', [
-            'driver' => $client->driver,
-            'host' => $client->host,
-            'port' => $client->port,
-            'database' => $client->db_name,
-            'username' => $client->user,
-            'password' => $client->password,
-            'charset' => 'utf8',
-            'prefix' => '',
-            'schema' => 'public',
-            'sslmode' => 'prefer',
-        ]);
-
-        return;
-    }
-
-    public static function clientConnection(Client $client): Connection
-    {
-        DB::purge('origem');
-        DB::reconnect('origem');
-        
-        return DB::connection(
-           'origem'
-        );
+        return Response()
+            ->json([
+                'message' => $message,
+                'error'   => $error,
+                'data'    => $data
+            ]);
     }
 }

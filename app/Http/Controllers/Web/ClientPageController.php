@@ -15,7 +15,7 @@ class ClientPageController extends Controller
      */
     public function index(): Response
     {  
-        return Inertia::render('Client/Client');
+        return Inertia::render(component: 'Client/Client');
     }
 
     /**

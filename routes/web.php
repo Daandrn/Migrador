@@ -3,6 +3,7 @@
 use App\Http\Controllers\Web\{
     ClientPageController,
     CheckPageController,
+    VerifyErrorPageController,
 };
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
@@ -22,6 +23,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/clientes', [ClientPageController::class, 'index'])->name('clients');
 
     Route::get('/checagens', [CheckPageController::class, 'index'])->name('checks');
+
+    Route::get('/erros', [VerifyErrorPageController::class, 'index'])->name('verifyErrors');
+
     
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');

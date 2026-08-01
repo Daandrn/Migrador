@@ -8,6 +8,7 @@ readonly class UpdateClientDto
 {
     public function __construct(
         public int    $id,
+        public string $host,
         public int    $port,
         public string $user,
         public string $password,
@@ -21,13 +22,14 @@ readonly class UpdateClientDto
     public static function make(UpdateClientRequest $request): self
     {
         return new self(
-            $request->id,
-            $request->port,
-            $request->user,
-            $request->password,
-            $request->db_name,
-            $request->driver,
-            $request->active,
+            id: $request->id,
+            host: $request->host,
+            port: $request->port,
+            user: $request->user,
+            password: $request->password,
+            db_name: $request->db_name,
+            driver: $request->driver,
+            active: $request->active,
         );
     }
 
@@ -35,6 +37,7 @@ readonly class UpdateClientDto
     {
         return [
             'id'       => $this->id,
+            'host'     => $this->host,
             'port'     => $this->port,
             'user'     => $this->user,
             'password' => $this->password,

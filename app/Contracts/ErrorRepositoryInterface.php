@@ -2,7 +2,7 @@
 
 namespace App\Contracts;
 
-interface ErrorRepositoryInterface
+interface VerifyErrorRepositoryInterface
 {
     public function gravar(array $data): bool;
     public function buscar(?array $types): array;
