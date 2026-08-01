@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Checks\CommandCheck;
+use App\DTO\ApiResponse;
 use App\DTO\Check\InsertCheckDto;
 use App\DTO\Check\UpdateCheckDto;
 use App\Helpers\NormalizeSql;
@@ -35,11 +36,22 @@ class CheckController extends Controller
     {
         $checks = $this->checkRepository->getChecks(types: null);
 
+        $response = ApiResponse::make(
+            success: true,
+            message: 'Busca de checagens realizada com sucesso!',
+            data: [
+                'checks' => $checks
+            ]
+        );
+
         return response()
-            ->json(data: $checks);
+            ->json(
+                data: $response->toArray(), 
+                status: $response->statusCode,
+            );
     }
 
-    public function store(StoreCheckRequest $request)
+    public function store(StoreCheckRequest $request): JsonResponse
     {
         $request->merge([
             'sql_query' => NormalizeSQl::make(sql: $request->input('sql_query')),
@@ -48,37 +60,63 @@ class CheckController extends Controller
 
         $this->checkService->verifyMultSql(sql: $request->input('sql_query'));
         
-        $this->checkRepository->create(
+        $createdCheck = $this->checkRepository->create(
             data: InsertCheckDto::make(request: $request)
         );
 
-        $message = 'Checagem incluída com sucesso!';
-        $error   = false;
-        $data['errors'] = [
-                'description' => 'nada para voce aqui',
-            ];
+        $response = ApiResponse::make(
+            success: true,
+            message: 'Checagem incluída com sucesso!',
+            data: [
+                'check' => $createdCheck
+            ]
+        );
 
-        return Response()
-            ->json([
-                'message' => $message,
-                'error'   => $error,
-                'data'    => $data,
-            ]);
+        return response()
+            ->json(
+                data: $response->toArray(), 
+                status: $response->statusCode,
+            );
     }
 
-    public function update(UpdateCheckRequest $request): bool
+    public function update(UpdateCheckRequest $request): JsonResponse
     {
         $request->merge([
             'sql_query' => NormalizeSql::make(sql: $request->input('sql_query')),
             'description' => trim($request->input('description')),
         ]);
 
-        $this->checkService->verifyMultSql(sql: $request->input('sql_query'));
-        
-        return $this->checkRepository->update(data: UpdateCheckDto::make($request));
+        try {
+            $this->checkService->verifyMultSql(sql: $request->input('sql_query'));
+
+            DB::beginTransaction();
+
+            $hasUpdated = $this->checkRepository->update(data: UpdateCheckDto::make($request));
+
+            DB::commit();
+            
+            $response = ApiResponse::make(
+                success: $hasUpdated,
+                message: 'Checagem atualizada com sucesso!',
+            );
+        } catch (\Throwable $error) {
+            DB::rollBack();
+
+            $response = ApiResponse::make(
+                success: false,
+                message: 'Erro ao atualizar checagem: ' . $error->getMessage(),
+                statusCode: 422
+            );
+        }
+
+        return response()
+            ->json(
+                data: $response->toArray(), 
+                status: $response->statusCode,
+            );
     }
 
-    public function destroy(int $id)
+    public function destroy(int $id): JsonResponse
     {
         try {
             DB::beginTransaction();
@@ -87,23 +125,25 @@ class CheckController extends Controller
 
             DB::commit();
 
-            $message = 'Checagem excluída com sucesso!';
-            $error   = false;
-            $data    = [];
+            $response = ApiResponse::make(
+                success: true,
+                message: 'Checagem excluída com sucesso!',
+            );
         } catch (\Throwable $error) {
             DB::rollBack();
-            
-            $message = 'Erro ao excluir checagem: ' . $error->getMessage();
-            $error   = true;
-            $data    = [];
+
+            $response = ApiResponse::make(
+                success: false,
+                message: 'Erro ao excluir checagem: ' . $error->getMessage(),
+                statusCode: 422
+            );
         }
 
-        return Response()
-            ->json(data: [
-                'message' => $message,
-                'error'   => $error,
-                'data'    => $data
-            ]);
+        return response()
+            ->json(
+                data: $response->toArray(), 
+                status: $response->statusCode,
+            );
     }
 
     public function init(): JsonResponse
@@ -123,22 +163,24 @@ class CheckController extends Controller
 
             DB::commit();
 
-            $message = 'Verificações concluídas!';
-            $error   = false;
-            $data    = [];
+            $response = ApiResponse::make(
+                success: true,
+                message: 'Verificações concluídas!',
+            );
         } catch (\Throwable $error) {
             DB::rollBack();
-            
-            $message = 'Falha ao realizar verificações: ' . json_encode($error->getMessage());
-            $error   = true;
-            $data    = [];
+
+            $response = ApiResponse::make(
+                success: false,
+                message: 'Falha ao realizar verificações: ' . $error->getMessage(),
+                statusCode: 422
+            );
         }
 
-        return Response()
-            ->json([
-                'message' => $message,
-                'error'   => $error,
-                'data'     => $data,
-            ]);
+        return response()
+            ->json(
+                data: $response->toArray(), 
+                status: $response->statusCode,
+            );
     }
 }

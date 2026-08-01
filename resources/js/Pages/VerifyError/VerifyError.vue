@@ -14,9 +14,7 @@ async function loadVerifyErrors() {
 
         const response = await axios.get(route('api.verifyErrors'));
 
-        verifyErrors.value = Array.isArray(response.data)
-            ? response.data
-            : response.data.data ?? [];
+        verifyErrors.value = response.data.data.verifyErrors;
     } catch (error) {
         error.value = error.response?.data?.message ?? 'Erro ao carregar erros de checagem.';
         console.error(error);

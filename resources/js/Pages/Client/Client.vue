@@ -15,9 +15,7 @@ async function loadClients() {
 
         const response = await axios.get(route('api.clients'));
 
-        clients.value = Array.isArray(response.data)
-            ? response.data
-            : response.data.data ?? [];
+        clients.value = response.data.data.clients;
     } catch (error) {
         error.value = error.response?.data?.message ?? 'Erro ao carregar clientes.';
         console.error(error);
@@ -28,9 +26,9 @@ async function loadClients() {
 
 async function updateClient(client) {
     try {
-        await axios.put(route('api.clients') + `/${client.id}`, client);
+        const response = await axios.put(route('api.clients') + `/${client.id}`, client);
 
-        alert('Cliente atualizado com sucesso!');
+        alert(response.data.message);
     } catch (error) {
         console.error(error);
         alert(error.response?.data?.message ?? 'Erro ao atualizar cliente.');

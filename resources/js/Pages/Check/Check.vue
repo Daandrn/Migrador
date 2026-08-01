@@ -15,9 +15,7 @@ async function loadChecks() {
 
         const response = await axios.get(route('api.checks'));
 
-        checks.value = Array.isArray(response.data)
-            ? response.data
-            : response.data.data ?? [];
+        checks.value = response.data.data.checks;
     } catch (error) {
         error.value = error.response?.data?.message ?? 'Erro ao carregar checagens.';
         console.error(error);
@@ -28,9 +26,9 @@ async function loadChecks() {
 
 async function updateCheck(check) {
     try {
-        await axios.put(route('api.checks') + `/${check.id}`, check);
+        const response = await axios.put(route('api.checks') + `/${check.id}`, check);
 
-        alert('Check atualizado com sucesso!');
+        alert(response.data.message);
     } catch (error) {
         console.error(error);
         alert(error.response?.data?.message ?? 'Erro ao atualizar Check.');

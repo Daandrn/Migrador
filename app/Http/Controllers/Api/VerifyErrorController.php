@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\DTO\ApiResponse;
 use App\Http\Controllers\Controller;
 use App\Repository\VerifyErrorRepository;
-use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -22,12 +22,24 @@ class VerifyErrorController extends Controller
         $types = $request->input('types');
         
         $VerifyErrors = $this->repository->get(types: $types);
+
+        $response = ApiResponse::make(
+                success: true,
+                message: 'Busca de erros de verificação realizada com sucesso!',
+                data: [
+                    'verifyErrors' => $VerifyErrors
+                ],
+                statusCode: 200
+            );
         
-        return Response()
-            ->json(data: $VerifyErrors);
+        return response()
+            ->json(
+                data: $response->toArray(), 
+                status: $response->statusCode,
+            );  
     }
 
-    public function destroy(Request $request)
+    public function destroy(Request $request): JsonResponse
     {
         try {
             DB::beginTransaction();
@@ -36,22 +48,25 @@ class VerifyErrorController extends Controller
 
             DB::commit();
 
-            $message = 'Erro de checagem excluído com sucesso!';
-            $error   = false;
-            $data    = [];
+            $response = ApiResponse::make(
+                success: true,
+                message: 'Erro de checagem excluído com sucesso!',
+                statusCode: 200
+            );
         } catch (\Throwable $error) {
             DB::rollBack();
-            
-            $message = 'Erro ao excluir Erro de checagem: ' . $error->getMessage();
-            $error   = true;
-            $data    = [];
+
+            $response = ApiResponse::make(
+                success: false,
+                message: 'Erro ao excluir Erro de checagem: ' . $error->getMessage(),
+                statusCode: 422
+            );
         }
 
-        return Response()
-            ->json([
-                'message' => $message,
-                'error'   => $error,
-                'data'    => $data
-            ]);
+        return response()
+            ->json(
+                data: $response->toArray(), 
+                status: $response->statusCode,
+            );  
     }
 }

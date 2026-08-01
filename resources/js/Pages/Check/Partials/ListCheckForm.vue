@@ -65,9 +65,7 @@ async function loadTypes() {
         errorMessage.value = '';
 
         const response = await axios.get(route('api.verifyTypes'));
-        types.value = Array.isArray(response.data)
-            ? response.data
-            : response.data.data ?? [];
+        types.value = response.data.data.verifyTypes;
     } catch (error) {
         console.error(error);
         errorMessage.value = error.response?.data?.message
