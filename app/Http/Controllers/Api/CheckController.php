@@ -2,39 +2,50 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Checks\CommandCheck;
+use App\Checks\CheckExecutor;
 use App\DTO\ApiResponse;
-use App\DTO\Check\InsertCheckDto;
-use App\DTO\Check\UpdateCheckDto;
+use App\DTO\ApiResponseError;
+use App\DTO\Check\{
+    InsertCheckDto,
+    UpdateCheckDto,
+};
 use App\Helpers\NormalizeSql;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Api\Check\StoreCheckRequest;
-use App\Http\Requests\Api\Check\UpdateCheckRequest;
+use App\Http\Requests\Api\Check\{
+    ExecuteChecksRequest,
+    StoreCheckRequest,
+    UpdateCheckRequest,
+};
 use App\Models\{
     Check,
 };
-use App\Repository\CheckRepository;
-use App\Repository\VerifyErrorRepository;
+use App\Repository\{
+    VerifyErrorRepository,
+};
 use App\Service\CheckService;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
+use App\Service\ClientService;
+use App\Types\SqlQuery;
+use Illuminate\Http\{
+    JsonResponse,
+    Request,
+};
 use Illuminate\Support\Facades\DB;
 
 class CheckController extends Controller
 {
     public function __construct(
-        protected CommandCheck $commandCheck,
-        protected CheckRepository $checkRepository,
+        protected CheckExecutor $checkExecutor,
         protected VerifyErrorRepository $verifyErrorRepository,
         protected Check $check,
         protected CheckService $checkService,
+        protected ClientService $clientService,
     ) {
         //
     }
 
     public function get(Request $request): JsonResponse
     {
-        $checks = $this->checkRepository->getChecks(types: null);
+        $checks = $this->checkService->get(types: null);
 
         $response = ApiResponse::make(
             success: true,
@@ -57,20 +68,30 @@ class CheckController extends Controller
             'sql_query' => NormalizeSQl::make(sql: $request->input('sql_query')),
             'description' => trim($request->input('description')),
         ]);
-
-        $this->checkService->verifyMultSql(sql: $request->input('sql_query'));
         
-        $createdCheck = $this->checkRepository->create(
-            data: InsertCheckDto::make(request: $request)
-        );
+        try {
+            $createdCheck = $this->checkService->store(
+                dto: InsertCheckDto::make(request: $request)
+            );
 
-        $response = ApiResponse::make(
-            success: true,
-            message: 'Checagem incluída com sucesso!',
-            data: [
-                'check' => $createdCheck
-            ]
-        );
+            $response = ApiResponse::make(
+                success: true,
+                message: 'Checagem salva com sucesso!',
+                data: [
+                    'check' => $createdCheck
+                ]
+            );
+        } catch (\Throwable $error) {
+            $response = ApiResponse::make(
+                success: false,
+                message: 'Erro ao criar checagem: ' . $error->getMessage(),
+                statusCode: 422,
+            )
+            ->setErrors(ApiResponseError::make(
+                'ERRO',
+                'Erro ao criar checagem: ' . $error->getMessage()
+            ));
+        }
 
         return response()
             ->json(
@@ -87,25 +108,17 @@ class CheckController extends Controller
         ]);
 
         try {
-            $this->checkService->verifyMultSql(sql: $request->input('sql_query'));
-
-            DB::beginTransaction();
-
-            $hasUpdated = $this->checkRepository->update(data: UpdateCheckDto::make($request));
-
-            DB::commit();
+            $hasUpdated = $this->checkService->update(dto: UpdateCheckDto::make($request));
             
             $response = ApiResponse::make(
                 success: $hasUpdated,
                 message: 'Checagem atualizada com sucesso!',
             );
         } catch (\Throwable $error) {
-            DB::rollBack();
-
             $response = ApiResponse::make(
                 success: false,
                 message: 'Erro ao atualizar checagem: ' . $error->getMessage(),
-                statusCode: 422
+                statusCode: 422,
             );
         }
 
@@ -119,23 +132,17 @@ class CheckController extends Controller
     public function destroy(int $id): JsonResponse
     {
         try {
-            DB::beginTransaction();
-            
-            $this->checkRepository->delete(id: $id);
-
-            DB::commit();
+            $this->checkService->delete(id: $id);
 
             $response = ApiResponse::make(
                 success: true,
                 message: 'Checagem excluída com sucesso!',
             );
         } catch (\Throwable $error) {
-            DB::rollBack();
-
             $response = ApiResponse::make(
                 success: false,
                 message: 'Erro ao excluir checagem: ' . $error->getMessage(),
-                statusCode: 422
+                statusCode: 422,
             );
         }
 
@@ -146,22 +153,21 @@ class CheckController extends Controller
             );
     }
 
-    public function init(): JsonResponse
-    {        
+    public function execute(ExecuteChecksRequest $request): JsonResponse
+    {
         try {
-            $this->check
-                ->All()
-                ->each(function ($check) {
-                    $this->commandCheck->add(sqlCheck: $check->sql_query);
-                });
+            $client = $this->clientService->find(
+                id: $request->integer('client_id'),
+            );
 
-            DB::beginTransaction();
+            $checks = $this->checkService->getById(
+                ids: $request->input('check_ids'),
+            );
 
-            $client_id = 5;
-
-            $this->commandCheck->execute(clientId: $client_id);
-
-            DB::commit();
+            $this->checkExecutor->run(
+                client: $client,
+                checks: $checks,
+            );
 
             $response = ApiResponse::make(
                 success: true,
@@ -173,7 +179,7 @@ class CheckController extends Controller
             $response = ApiResponse::make(
                 success: false,
                 message: 'Falha ao realizar verificações: ' . $error->getMessage(),
-                statusCode: 422
+                statusCode: 422,
             );
         }
 

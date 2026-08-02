@@ -26,7 +26,7 @@ Route::delete('checks/{id}', [CheckController::class, 'destroy'])->name('api.che
 Route::put('checks/{id}', [CheckController::class, 'update'])->name('api.checks.update');
 Route::post('checks/create', [CheckController::class, 'store'])->name('api.checks.insert');
 Route::get('checks', [CheckController::class, 'get'])->name('api.checks');
-Route::get('checks/executar', [CheckController::class, 'init'])->name('api.checks.init');
+Route::post('checks/executar', [CheckController::class, 'execute'])->name('api.checks.execute');
 
 Route::delete('verificacao/erros', [VerifyErrorController::class, 'destroy'])->name('api.verifyErrors.destroy');
 Route::get('verificacao/erros', [VerifyErrorController::class, 'get'])->name('api.verifyErrors');

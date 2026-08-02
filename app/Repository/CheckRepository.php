@@ -2,10 +2,13 @@
 
 namespace App\Repository;
 
-use App\DTO\Check\CheckDto;
-use App\DTO\Check\InsertCheckDto;
-use App\DTO\Check\UpdateCheckDto;
+use App\DTO\Check\{
+    CheckDto,
+    UpdateCheckDto,
+    InsertCheckDto,
+};
 use App\Models\Check;
+use App\Types\SqlQuery;
 
 class CheckRepository
 {
@@ -15,29 +18,9 @@ class CheckRepository
         //
     }
 
-    public function create(InsertCheckDto $data): CheckDto
-    {
-        $createdCheck = $this->check->create($data->toArray());
-        
-        return CheckDto::make(
-            id: $createdCheck->id,
-            description: $createdCheck->description,
-            type_id: $createdCheck->type_id,
-            sql_query: $createdCheck->sql_query,
-            active: $createdCheck->active,
-        );
-    }
-
-    public function update(UpdateCheckDto $data): bool
-    {
-        $check = $this->check->findOrFail($data->id);
-        
-        return $check->update($data->toArray());
-    }
-
     public function getChecks(?array $types): array
     {
-        $check = $this->check
+        $checks = $this->check
             ->select([
                 'checks.id',
                 'checks.description',
@@ -51,10 +34,39 @@ class CheckRepository
                 $query->whereIn('type_id', $types);
             })
             ->orderBy('checks.type_id', 'asc')
-            ->orderBy('checks.id', 'desc');
+            ->orderBy('checks.id', 'desc')
+            ->get();
         
-        return $check->get()
-            ->toArray();
+        return $checks->toArray();
+    }
+
+    public function getById(array $ids): array
+    {
+        $checks = $this->check
+            ->whereIn('id', $ids)
+            ->get();
+        
+        return $checks->toArray();
+    }
+
+    public function create(InsertCheckDto $data): CheckDto
+    {
+        $createdCheck = $this->check->create($data->toArray());
+        
+        return CheckDto::make(
+            id: $createdCheck->id,
+            description: $createdCheck->description,
+            type_id: $createdCheck->type_id,
+            sql_query: new SqlQuery($createdCheck->sql_query),
+            active: $createdCheck->active,
+        );
+    }
+
+    public function update(UpdateCheckDto $data): bool
+    {
+        $check = $this->check->findOrFail($data->id);
+        
+        return $check->update($data->toArray());
     }
 
     public function delete(int $id): bool

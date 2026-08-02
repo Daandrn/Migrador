@@ -28,7 +28,8 @@ class VerifyErrorRepository
             ->join('verify_types', 'verify_errors.type_id', '=', 'verify_types.id')
             ->when(!empty($types), function ($query) use ($types) {
                 $query->whereIn('verify_errors.type_id', $types);
-            });
+            })
+            ->orderBy('id');
         
         return $query->get(
                 ['verify_errors.id', 'verify_errors.data', 'verify_errors.type_id', 'verify_types.description as description_type']

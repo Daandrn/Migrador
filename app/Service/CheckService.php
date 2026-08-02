@@ -2,25 +2,92 @@
 
 namespace App\Service;
 
-use App\Exceptions\MultplyQueryException;
-use App\Helpers\NormalizeSql;
+use App\DTO\Check\CheckDto;
+use App\DTO\Check\InsertCheckDto;
+use App\DTO\Check\UpdateCheckDto;
+use App\Helpers\SqlValidator;
+use App\Models\Check;
 use App\Repository\CheckRepository;
-use Kodus\SQLSplit\Splitter;
+use App\Types\SqlQuery;
+use Exception;
+use Illuminate\Support\Facades\DB;
 
 class CheckService
 {
-    public function __construct() {
+    public function __construct(
+        protected CheckRepository $checkRepository,
+        protected SqlValidator $sqlValidator,
+        protected ClientService $clientService,
+    ) {
         //
     }
 
-    public function verifyMultSql(string $sql)
+    public function get(?array $types): array
     {
-        $sql = NormalizeSql::make(sql: $sql);
+        return $this->checkRepository->getChecks($types);
+    }
 
-        $queryCount = count(Splitter::split(sql: $sql, strip_comments: true));
-        
-        if ($queryCount > 1) {
-            throw new MultplyQueryException('Apenas uma instrução SQL é permitida por Check.');
+    /**
+     * @param int[] $ids
+     * @return Check[]
+     */
+    public function getById(array $ids): array
+    {
+        if (empty($ids)) {
+            throw new Exception("Nenhum id informado para busca de checagens, verifique!");
         }
+
+        $checks = $this->checkRepository->getById($ids);
+
+        if (empty($checks)) {
+            throw new Exception("Nenhuma checagem encontrada, verifique!");
+        }
+
+        return $checks;
+    }
+
+    public function store(InsertCheckDto $dto): CheckDto
+    {
+        $validatedDto = new InsertCheckDto(
+            description: $dto->description,
+            type_id: $dto->type_id,
+            sql_query: new SqlQuery($dto->sql_query),
+            active: $dto->active,
+        );
+
+        return DB::transaction(
+            function () use ($validatedDto): CheckDto
+            {
+                return $this->checkRepository->create($validatedDto);
+            }
+        );
+    }
+
+    public function update(UpdateCheckDto $dto): bool
+    {
+        $validatedDto = new UpdateCheckDto(
+            id: $dto->id,
+            description: $dto->description,
+            type_id: $dto->type_id,
+            sql_query: new SqlQuery($dto->sql_query),
+            active: $dto->active,
+        );
+
+        return DB::transaction(
+            function () use ($validatedDto): bool
+            {
+                return $this->checkRepository->update($validatedDto);
+            }
+        );
+    }
+
+    public function delete(int $id): bool
+    {
+        return DB::transaction(
+            function () use ($id): bool
+            {
+                return $this->checkRepository->delete($id);
+            }
+        );
     }
 }

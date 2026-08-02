@@ -2,19 +2,21 @@
 
 namespace App\Checks;
 
-use App\Contracts\CommandCheckInterface;
+use App\Contracts\CheckExecutorInterface;
+use App\Models\Client;
 use App\Repository\VerifyErrorRepository;
 use App\Service\CheckService;
 use App\Service\ClientService;
+use App\Types\SqlQuery;
 use Illuminate\Database\Connection;
 use Exception;
 
-class CommandCheck implements CommandCheckInterface
+class CheckExecutor implements CheckExecutorInterface
 {
     /**
-     * @var string[] $sqlChecks
+     * @var SqlQuery[] $queryChecks
      */
-    protected array $sqlChecks = [];
+    protected array $queryChecks;
 
     public function __construct(
         protected VerifyErrorRepository $verifyErrorRepository,
@@ -24,29 +26,39 @@ class CommandCheck implements CommandCheckInterface
         //
     }
     
-    public function add(string $sqlCheck)
+    protected function add(SqlQuery $queryCheck)
     {
-        $this->sqlChecks[] = $sqlCheck;
+        $this->queryChecks[] = $queryCheck;
         
         return;
     }
 
-    public function execute(int $clientId)
+    public function run(Client $client, array $checks)
     {
-        $clientConn = $this->clientService->clientConnection(id: $clientId);
+        if (empty($checks)) {
+            throw new Exception("Não há checagens para serem executadas, verifique!");
+        }
         
-        foreach ($this->sqlChecks as $check) {
-            $check = trim($check);
-            
-            $this->checkService->verifyMultSql(sql: $check);
+        foreach ($checks as $check) {
+            $this->add(
+                queryCheck: new SqlQuery($check['sql_query'])
+            );
+        }
+        
+        $clientConn = $this->clientService->validAndConnect(client: $client);
 
-           if (!$this->executeInClient(clientConn: $clientConn, sql_query: $check)) {
+        foreach ($this->queryChecks as $check) {
+           if (!$this->executeInClient(clientConn: $clientConn, sql_query: new SqlQuery($check))) {
                 throw new Exception('Não foi possível gravar o registro.');
            }
         };
+
+        unset($this->queryChecks);
+
+        return;
     }
 
-    protected function executeInClient(Connection $clientConn, string $sql_query): true
+    protected function executeInClient(Connection $clientConn, SqlQuery $sql_query): true
     {
         $data = $clientConn->select(query: $sql_query);
 
@@ -62,6 +74,8 @@ class CommandCheck implements CommandCheckInterface
                 throw new Exception('Não foi possível gravar o registro: ' . json_encode($item));
             }
         }
+
+        unset($data);
 
         return true;
     }
