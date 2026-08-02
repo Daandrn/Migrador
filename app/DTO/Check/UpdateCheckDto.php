@@ -3,6 +3,7 @@
 namespace App\DTO\Check;
 
 use App\Http\Requests\Api\Check\UpdateCheckRequest;
+use App\Types\SqlQuery;
 
 readonly class UpdateCheckDto
 {
@@ -10,7 +11,7 @@ readonly class UpdateCheckDto
         public int    $id,
         public string $description,
         public int    $type_id,
-        public string $sql_query,
+        public SqlQuery $sql_query,
         public bool   $active,
     ) {
         //
@@ -22,7 +23,7 @@ readonly class UpdateCheckDto
             id: $request->id,
             description: $request->description,
             type_id: $request->type_id,
-            sql_query: $request->sql_query,
+            sql_query: new SqlQuery($request->sql_query),
             active: $request->active,
         );
     }

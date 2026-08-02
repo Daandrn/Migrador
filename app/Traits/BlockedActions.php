@@ -4,12 +4,12 @@ namespace App\Traits;
 
 trait BlockedActions
 {
-    public const INSERT    = 'INSERT';
+    public const INSERT    = 'INSERT INTO';
     public const UPDATE    = 'UPDATE';
-    public const DELETE    = 'DELETE';
+    public const DELETE    = 'DELETE FROM';
     public const TRUNCATE  = 'TRUNCATE';
-    public const ALTER     = 'ALTER';
-    public const DROP      = 'DROP';
+    public const ALTER_TABLE = 'ALTER TABLE';
+    public const DROP_TABLE  = 'DROP TABLE';
     public const CREATE    = 'CREATE';
     public const GRANT     = 'GRANT';
     public const REVOKE    = 'REVOKE';
@@ -33,8 +33,8 @@ trait BlockedActions
             self::UPDATE,
             self::DELETE,
             self::TRUNCATE,
-            self::ALTER,
-            self::DROP,
+            self::ALTER_TABLE,
+            self::DROP_TABLE,
             self::CREATE,
             self::GRANT,
             self::REVOKE,

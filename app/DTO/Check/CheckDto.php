@@ -2,13 +2,15 @@
 
 namespace App\DTO\Check;
 
+use App\Types\SqlQuery;
+
 readonly class CheckDto
 {
     public function __construct(
         public int    $id,
         public string $description,
         public int    $type_id,
-        public string $sql_query,
+        public SqlQuery $sql_query,
         public bool   $active,
     ) {
         //
@@ -18,7 +20,7 @@ readonly class CheckDto
         int    $id,
         string $description,
         int    $type_id,
-        string $sql_query,
+        SqlQuery $sql_query,
         bool   $active,
     ): self 
     {
@@ -26,7 +28,7 @@ readonly class CheckDto
             id: $id,
             description: $description,
             type_id: $type_id,
-            sql_query: $sql_query,
+            sql_query: new SqlQuery($sql_query),
             active: $active,
         );
     }

@@ -2,6 +2,7 @@
 
 namespace App\DTO\Check;
 
+use App\Types\SqlQuery;
 use App\Http\Requests\Api\Check\StoreCheckRequest;
 
 readonly class InsertCheckDto
@@ -9,18 +10,20 @@ readonly class InsertCheckDto
     public function __construct(
         public string $description,
         public int    $type_id,
-        public string $sql_query,
+        public SqlQuery $sql_query,
         public bool   $active,
     ) {
         //
     }
 
-    public static function make(StoreCheckRequest $request): self
+    public static function make(
+        StoreCheckRequest $request
+    ): self
     {
         return new self(
             description: $request->description,
             type_id: $request->type_id,
-            sql_query: $request->sql_query,
+            sql_query: new SqlQuery($request->sql_query),
             active: $request->active,
         );
     }
