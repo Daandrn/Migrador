@@ -5,11 +5,13 @@ import { Head } from '@inertiajs/vue3';
 
 const verifyErrors = ref([]);
 const loading = ref(false);
+const loadingMessage = ref('Carregando, aguarde!');
 const error = ref(null);
 
 async function loadVerifyErrors() {
     try {
         loading.value = true;
+        loadingMessage.value = 'Carregando erros de checagem, aguarde!';
         error.value = null;
 
         const response = await axios.get(route('api.verifyErrors'));
@@ -28,6 +30,9 @@ async function deleteError(verifyError) {
         return;
     }
 
+    loading.value = true;
+    loadingMessage.value = 'Carregando erros de checagem, aguarde!';
+
     try {
         const ids = new Array;
         ids.push(verifyError.id);
@@ -43,6 +48,8 @@ async function deleteError(verifyError) {
     } catch (error) {
         console.error(error);
         alert(error.response?.data?.message ?? 'Erro ao excluir erro de checagem.');
+    } finally {
+        loading.value = false;
     }
 }
 
@@ -142,6 +149,7 @@ onMounted(() => {
                                                 type="button"
                                                 class="rounded bg-red-600 px-3 py-1 text-white hover:bg-red-700"
                                                 @click="deleteError(verifyError)"
+                                                :disabled="loading"
                                             >
                                                 Excluir
                                             </button>

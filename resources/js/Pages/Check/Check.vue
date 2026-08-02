@@ -6,11 +6,13 @@ import { Head } from '@inertiajs/vue3';
 
 const checks = ref([]);
 const loading = ref(false);
+const loadingMessage = ref('Carregando, aguarde!');
 const error = ref(null);
 
 async function loadChecks() {
     try {
         loading.value = true;
+        loadingMessage.value = 'Carregando checagens, aguarde!';
         error.value = null;
 
         const response = await axios.get(route('api.checks'));
@@ -26,12 +28,17 @@ async function loadChecks() {
 
 async function updateCheck(check) {
     try {
+        loading.value = true;
+        loadingMessage.value = 'Alterando checagem, aguarde!';
+        
         const response = await axios.put(route('api.checks') + `/${check.id}`, check);
 
         alert(response.data.message);
     } catch (error) {
         console.error(error);
         alert(error.response?.data?.message ?? 'Erro ao atualizar Check.');
+    } finally {
+        loading.value = false;
     }
 }
 
@@ -41,6 +48,9 @@ async function deleteCheck(check) {
     }
 
     try {
+        loading.value = true;
+        loadingMessage.value = 'Excluindo checagem, aguarde!';
+        
         const response = await axios.delete(route('api.checks.destroy', check.id));
 
         checks.value = checks.value.filter(item => item.id !== check.id);
@@ -48,6 +58,8 @@ async function deleteCheck(check) {
     } catch (error) {
         console.error(error);
         alert(error.response?.data?.message ?? 'Erro ao excluir check.');
+    } finally {
+        loading.value = false;
     }
 }
 
@@ -173,9 +185,9 @@ onMounted(() => {
                                         >
                                             <button
                                                 type="button"
-                                                :disabled="check.saving"
                                                 class="rounded bg-blue-600 px-3 py-1 text-white hover:bg-blue-700"
                                                 @click="updateCheck(check)"
+                                                :disabled="loading"
                                             >
                                                 Alterar
                                             </button>
@@ -184,6 +196,7 @@ onMounted(() => {
                                                 type="button"
                                                 class="rounded bg-red-600 px-3 py-1 text-white hover:bg-red-700"
                                                 @click="deleteCheck(check)"
+                                                :disabled="loading"
                                             >
                                                 Excluir
                                             </button>

@@ -88,10 +88,11 @@ async function saveCheck() {
             active: form.active,
         });
 
-        successMessage.value = 'Checagem salva com sucesso.';
+        successMessage.value = response.data.message;
         clearForm();
-        emit('check-saved', response.data);
+        emit('check-saved', response.data.message);
     } catch (error) {
+        alert(error.response.data.message);
         console.error(error);
         applyErrorValidation(error);
     } finally {

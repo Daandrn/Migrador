@@ -1,16 +1,20 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import ListClientForm from './Partials/ListClientForm.vue';
+import LoadingOverlay from '@/Components/LoadingOverlay.vue';
 import { onMounted, ref } from 'vue';
 import { Head } from '@inertiajs/vue3';
 
 const clients = ref([]);
 const loading = ref(false);
+const loadingMessage = ref('Carregando, aguarde!');
 const error = ref(null);
+const verifyingUser = ref(false);
 
 async function loadClients() {
     try {
         loading.value = true;
+        loadingMessage.value = 'Carregando clientes, aguarde!';
         error.value = null;
 
         const response = await axios.get(route('api.clients'));
@@ -26,28 +30,40 @@ async function loadClients() {
 
 async function updateClient(client) {
     try {
+        loading.value = true;
+        loadingMessage.value = 'Alterando cliente, aguarde!';
+        
         const response = await axios.put(route('api.clients') + `/${client.id}`, client);
 
         alert(response.data.message);
+
+        client.password = '';
     } catch (error) {
         console.error(error);
         alert(error.response?.data?.message ?? 'Erro ao atualizar cliente.');
+    } finally {
+        loading.value = false;
     }
 }
 
 async function verifyUserClient(client) {
     try {
+        loading.value = true;
+        loadingMessage.value = 'Verificando permissões do usuário, aguarde!';
+        
         const response = await axios.get(route('api.clients.UserVerify', client.id));
 
-        if (response.data.error) {
+        if (response.data.success === false) {
             alert(response.data.message);
             return;
         }
-
+        
         alert('Usuário do cliente foi verificado e possui a permissão necessária!');
     } catch (error) {
         console.error(error);
         alert(error.response?.data?.message ?? 'Erro ao verificar usuário do cliente.');
+    } finally {
+        loading.value = false;
     }
 }
 
@@ -57,6 +73,9 @@ async function deleteClient(client) {
     }
 
     try {
+        loading.value = true;
+        loadingMessage.value = 'Excluindo cliente, aguarde!';
+        
         const response = await axios.delete(route('api.clients.destroy', client.id));
 
         clients.value = clients.value.filter(item => item.id !== client.id);
@@ -65,6 +84,8 @@ async function deleteClient(client) {
     } catch (error) {
         console.error(error);
         alert(error.response?.data?.message ?? 'Erro ao excluir cliente.');
+    } finally {
+        loading.value = false;
     }
 }
 
@@ -96,15 +117,13 @@ onMounted(() => {
 
                 <div class="overflow-hidden bg-white shadow-sm sm:rounded-lg dark:bg-gray-800">
 
-                    <div
-                        v-if="loading"
-                        class="text-sm text-gray-600 dark:text-gray-400"
-                    >
-                        Carregando clientes...
-                    </div>
+                    <LoadingOverlay
+                        :show="loading"
+                        :message="loadingMessage"
+                    />
 
                     <p
-                        v-else-if="error"
+                        v-if="error"
                         class="rounded-md bg-red-50 p-3 text-sm text-red-700 dark:bg-red-950 dark:text-red-300"
                     >
                         {{ error }}
@@ -233,9 +252,9 @@ onMounted(() => {
                                         >
                                             <button
                                                 type="button"
-                                                :disabled="client.saving"
                                                 class="rounded bg-blue-600 px-3 py-1 text-white hover:bg-blue-700"
                                                 @click="updateClient(client)"
+                                                :disabled="loading"
                                             >
                                                 Alterar
                                             </button>
@@ -244,6 +263,7 @@ onMounted(() => {
                                                 type="button"
                                                 class="rounded bg-green-600 px-3 py-1 text-white hover:bg-green-700"
                                                 @click="verifyUserClient(client)"
+                                                :disabled="loading"
                                             >
                                                 Verificar Usuário
                                             </button>
@@ -252,6 +272,7 @@ onMounted(() => {
                                                 type="button"
                                                 class="rounded bg-red-600 px-3 py-1 text-white hover:bg-red-700"
                                                 @click="deleteClient(client)"
+                                                :disabled="loading"
                                             >
                                                 Excluir
                                             </button>
