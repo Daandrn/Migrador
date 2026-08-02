@@ -1,6 +1,6 @@
 <?php 
 
-namespace App\Service;
+namespace App\Services;
 
 use App\DTO\Client\InsertClientDto;
 use App\DTO\Client\UpdateClientDto;
@@ -98,6 +98,22 @@ class ClientService
         return;
     }
 
+    protected function connectionReadonlyVerify(Connection $connection): void
+    {
+        $readOnlyState = $connection->selectOne(
+            'SHOW default_transaction_read_only'
+        );
+
+        if (
+            isset($readOnlyState->default_transaction_read_only) 
+            && $readOnlyState->default_transaction_read_only === 'on'
+        ) {
+            return;
+        }
+
+        throw new NotReadOnlyPermissionException("O modo de acesso não está configurado como \"Apenas leitura\", por segurança essa conexão não poderá ser usada.");
+    }
+
     protected function userReadOnlyVerify(Connection $connection, ?string $userName = null): void
     {
         $result = $connection->selectOne(<<<SQL
@@ -136,13 +152,15 @@ class ClientService
 
         $notReadOnly = (bool) $result->not_read_only;
 
-        if ($notReadOnly) {
-            throw new NotReadOnlyPermissionException(
-                empty($userName)
-                    ? "Este usuário possui permissões de escrita, por segurança não pode ser usado."
-                    : "O usuário {$userName} possui permissões de escrita, por segurança não pode ser usado."
-            );
+        if (!$notReadOnly) {
+            return;
         }
+
+        throw new NotReadOnlyPermissionException(
+            empty($userName)
+                ? "Este usuário possui permissões de escrita, por segurança não pode ser usado."
+                : "O usuário {$userName} possui permissões de escrita, por segurança não pode ser usado."
+        );
     }
 
     public function validAndConnect(Client $client): Connection
@@ -157,6 +175,10 @@ class ClientService
         );
 
         try {
+            $connection->statement(
+                'SET SESSION CHARACTERISTICS AS TRANSACTION READ ONLY'
+            );
+
             $connection->selectOne('select 1;');
         } catch (QueryException $error) {
             $message = strtolower($error->getMessage());
@@ -176,9 +198,13 @@ class ClientService
             throw new Exception($messageInfo);
         }
 
+        $this->connectionReadonlyVerify(
+            connection: $connection,
+        );
+
         $this->userReadOnlyVerify(
             connection: $connection,
-            userName: $client->user
+            userName: $client->user,
         );
         
         return $connection;

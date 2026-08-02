@@ -1,13 +1,13 @@
 <?php 
 
-namespace App\Service;
+namespace App\Services;
 
 use App\DTO\Check\CheckDto;
 use App\DTO\Check\InsertCheckDto;
 use App\DTO\Check\UpdateCheckDto;
 use App\Helpers\SqlValidator;
 use App\Models\Check;
-use App\Repository\CheckRepository;
+use App\Repositories\CheckRepository;
 use App\Types\SqlQuery;
 use Exception;
 use Illuminate\Support\Facades\DB;

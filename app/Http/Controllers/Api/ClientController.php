@@ -9,7 +9,7 @@ use App\DTO\Client\UpdateClientDto;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\Client\StoreClientRequest;
 use App\Http\Requests\Api\Client\UpdateClientRequest;
-use App\Service\ClientService;
+use App\Services\ClientService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;

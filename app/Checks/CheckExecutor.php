@@ -4,9 +4,9 @@ namespace App\Checks;
 
 use App\Contracts\CheckExecutorInterface;
 use App\Models\Client;
-use App\Repository\VerifyErrorRepository;
-use App\Service\CheckService;
-use App\Service\ClientService;
+use App\Repositories\VerifyErrorRepository;
+use App\Services\CheckService;
+use App\Services\ClientService;
 use App\Types\SqlQuery;
 use Illuminate\Database\Connection;
 use Exception;

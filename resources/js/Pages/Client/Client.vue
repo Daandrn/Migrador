@@ -58,7 +58,7 @@ async function verifyUserClient(client) {
             return;
         }
         
-        alert('Usuário do cliente foi verificado e possui a permissão necessária!');
+        alert(response.data.message);
     } catch (error) {
         console.error(error);
         alert(error.response?.data?.message ?? 'Erro ao verificar usuário do cliente.');

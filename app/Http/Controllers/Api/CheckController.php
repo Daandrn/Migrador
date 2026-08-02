@@ -19,12 +19,11 @@ use App\Http\Requests\Api\Check\{
 use App\Models\{
     Check,
 };
-use App\Repository\{
+use App\Repositories\{
     VerifyErrorRepository,
 };
-use App\Service\CheckService;
-use App\Service\ClientService;
-use App\Types\SqlQuery;
+use App\Services\CheckService;
+use App\Services\ClientService;
 use Illuminate\Http\{
     JsonResponse,
     Request,
