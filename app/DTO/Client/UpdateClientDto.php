@@ -3,6 +3,7 @@
 namespace App\DTO\Client;
 
 use App\Http\Requests\Api\Client\UpdateClientRequest;
+use Illuminate\Support\Facades\Crypt;
 
 readonly class UpdateClientDto
 {
@@ -11,7 +12,7 @@ readonly class UpdateClientDto
         public string $host,
         public int    $port,
         public string $user,
-        public string $password,
+        public ?string $password,
         public string $db_name,
         public string $driver,
         public bool   $active,

@@ -2,9 +2,9 @@
 
 namespace App\Exceptions;
 
-use Exception;
+use RuntimeException;
 
-class NotReadOnlyPermissionException extends Exception
+class NotReadOnlyPermissionException extends RuntimeException
 {
     //
 }

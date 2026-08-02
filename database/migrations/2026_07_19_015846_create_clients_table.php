@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('host', 100)->nullable(false);
             $table->integer('port')->nullable(false);
             $table->string('user', 100)->nullable(false);
-            $table->string('password', 100)->nullable(false);
+            $table->text('password')->nullable(false)->default('');
             $table->string('db_name', 100)->nullable(false);
             $table->string('driver', 100)->nullable(true);
             $table->boolean('active')->default(true);

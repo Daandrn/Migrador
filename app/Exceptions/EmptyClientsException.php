@@ -2,9 +2,9 @@
 
 namespace App\Exceptions;
 
-use Exception;
+use RuntimeException;
 
-class EmptyClientsException extends Exception
+class EmptyClientsException extends RuntimeException
 {
     //
 }

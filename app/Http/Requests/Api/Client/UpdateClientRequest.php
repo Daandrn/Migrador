@@ -26,7 +26,7 @@ class UpdateClientRequest extends FormRequest
             'host'     => 'required|string',
             'port'     => 'required|numeric',
             'user'     => 'required|string',
-            'password' => 'required|string',
+            'password' => 'nullable|string',
             'db_name'  => 'required|string',
             'driver'   => 'required|string',
             'active'   => 'required|bool',

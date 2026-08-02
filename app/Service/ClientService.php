@@ -7,8 +7,11 @@ use App\DTO\Client\UpdateClientDto;
 use App\Exceptions\EmptyClientsException;
 use App\Exceptions\NotReadOnlyPermissionException;
 use App\Models\Client;
+use Exception;
 use Illuminate\Database\Connection;
+use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
 
 class ClientService
@@ -19,28 +22,55 @@ class ClientService
         //
     }
 
-    public function get(bool $onlyActives): array
+    public function get(?bool $onlyActives = null): array
     {
-        return $this->client
-            ->when(!empty($onlyActives), function ($query) {
+        $clients = $this->client
+            ->when($onlyActives, function ($query) {
                 $query->where('active', true);
             })
             ->get()
-            ->toArray();
+            ->makeHidden('password');
+        
+        return $clients->toArray();
+    }
+
+    public function find(int $id): Client
+    {
+        $client = $this->client->find($id);
+
+        if (empty($client)) {
+            throw new EmptyClientsException('Não existem clientes cadastrados para os parametros!');
+        };
+        
+        return $client;
     }
 
     public function store(InsertClientDto $dto)
     {
+        $data = $dto->toArray();
+        $data['password'] = Crypt::encryptString($dto->password);
+        
         return $this->client->create(
-            $dto->toArray()
+           $data
         );
     }
 
-    public function update(UpdateClientDto $dto, int $id): bool
+    public function update(UpdateClientDto $dto, int $id): Client
     {
         $client = $this->client->findOrFail($id);
+        $data = $dto->toArray();
+
+        if (empty($dto->password)) {
+            unset($data['password']);
+        } else {
+            $data['password'] = Crypt::encryptString($data['password']);
+        }
+
+        $client->update(
+            $data
+        );
         
-        return $client->update($dto->toArray());
+        return $client;
     }
 
     public function delete(int $id): bool
@@ -50,7 +80,7 @@ class ClientService
         return $client->delete();
     }
 
-    protected function clientConfigConnection(Client $client): void
+    protected function configConnection(Client $client): void
     {
         Config::set('database.connections.origem', [
             'driver'   => $client->driver,
@@ -58,7 +88,7 @@ class ClientService
             'port'     => $client->port,
             'database' => $client->db_name,
             'username' => $client->user,
-            'password' => $client->password,
+            'password' => Crypt::decryptString($client->password),
             'charset'  => 'utf8',
             'prefix'   => '',
             'schema'   => 'public',
@@ -68,7 +98,7 @@ class ClientService
         return;
     }
 
-    protected function ReadOnlyVerify(Connection $connection, ?string $userName = null): void
+    protected function userReadOnlyVerify(Connection $connection, ?string $userName = null): void
     {
         $result = $connection->selectOne(<<<SQL
             SELECT
@@ -115,15 +145,9 @@ class ClientService
         }
     }
 
-    public function clientConnection(int $id): Connection
+    public function validAndConnect(Client $client): Connection
     {
-        $client = $this->client->find($id);
-        
-        if (empty($client)) {
-            throw new EmptyClientsException('Não há cliente cadastrado para os parametros. Verique!');
-        }
-
-        $this->clientConfigConnection(client: $client);
+        $this->configConnection(client: $client);
         
         DB::purge(name: 'origem');
         DB::reconnect(name: 'origem');
@@ -132,7 +156,27 @@ class ClientService
            name: 'origem'
         );
 
-        $this->ReadOnlyVerify(
+        try {
+            $connection->selectOne('select 1;');
+        } catch (QueryException $error) {
+            $message = strtolower($error->getMessage());
+
+            $unknownHost = str_contains($message, 'could not translate host name')
+                || str_contains($message, 'Name or service not known');
+            $invalidUserOrPassword = str_contains($message, 'password authentication failed for user');
+            $unknowDatabase = str_contains($message, 'database') && str_contains($message, 'does not exist');
+
+            $messageInfo = match (true) {
+                $unknownHost => 'O host informado não foi encontrado. Verifique o endereço do servidor.',
+                $invalidUserOrPassword => 'Usuário e/ou senha inválidos.',
+                $unknowDatabase => 'Não existe base de dados com este nome.',
+                default => $error->getMessage()
+            };
+            
+            throw new Exception($messageInfo);
+        }
+
+        $this->userReadOnlyVerify(
             connection: $connection,
             userName: $client->user
         );

@@ -48,31 +48,6 @@ class ClientController extends Controller
             ); 
     }
 
-    public function userVerify(int $id): JsonResponse
-    {
-        try {
-            $this->clientService->clientConnection(id: $id);
-
-            $response = ApiResponse::make(
-                success: true,
-                message: 'Usuário somente leitura, pode ser usado com segurança!',
-                statusCode: 200
-            );
-        } catch (\Throwable $error) {
-            $response = ApiResponse::make(
-                success: false,
-                message: 'Erro durante a verificação do usuário: ' . $error->getMessage(),
-                statusCode: 422
-            );
-        }
-
-        return response()
-            ->json(
-                data: $response->toArray(), 
-                status: $response->statusCode,
-            );
-    }
-
     /**
      * Store a newly created resource in storage.
      */
@@ -83,7 +58,7 @@ class ClientController extends Controller
         );
 
         $response = ApiResponse::make(
-            success: false,
+            success: true,
             message: 'Cliente criado com sucesso!',
             data: [
                 'client' => $client
@@ -152,6 +127,33 @@ class ClientController extends Controller
                 success: false,
                 message: 'Erro ao excluir cliente: ' . $error->getMessage(),
                 statusCode: 422
+            );
+        }
+
+        return response()
+            ->json(
+                data: $response->toArray(), 
+                status: $response->statusCode,
+            );
+    }
+
+    public function userVerify(int $id): JsonResponse
+    {
+        try {
+            $client = $this->clientService->find(id: $id);
+            
+            $this->clientService->validAndConnect(client: $client);
+
+            $response = ApiResponse::make(
+                success: true,
+                message: 'Usuário somente leitura, pode ser usado com segurança!',
+                statusCode: 200
+            );
+        } catch (\Throwable $error) {
+            $response = ApiResponse::make(
+                success: false,
+                message: 'Erro durante a verificação do usuário: ' . $error->getMessage(),
+                statusCode: 200
             );
         }
 

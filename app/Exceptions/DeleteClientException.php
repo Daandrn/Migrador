@@ -2,9 +2,9 @@
 
 namespace App\Exceptions;
 
-use Exception;
+use RuntimeException;
 
-class DeleteClientException extends Exception
+class DeleteClientException extends RuntimeException
 {
     //
 }
