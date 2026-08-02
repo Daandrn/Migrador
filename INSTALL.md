@@ -90,6 +90,7 @@ Ainda dentro do container da aplicação, execute:
 
 ```bash
 php artisan migrate
+php artisan db:seed
 ```
 
 ---
@@ -109,6 +110,10 @@ Todos executando em containers Docker independentes.
 # Primeira utilização
 
 Após a instalação:
+
+Faça Login com o usuário admin
+email: admin@gmail.com
+senha: admin
 
 1. Cadastre um cliente.
 2. Informe as credenciais do banco de dados do cliente.
