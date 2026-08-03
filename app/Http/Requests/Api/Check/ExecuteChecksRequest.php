@@ -22,8 +22,7 @@ class ExecuteChecksRequest extends FormRequest
                 'required', 
                 'integer', 
             ],
-            'check_ids' => [
-                'nullable', 
+            'check_ids' => [ 
                 'array',
             ],
             'check_ids.*' => [

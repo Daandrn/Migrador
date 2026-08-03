@@ -3,7 +3,7 @@ services:
     app:
         build:
             context: .
-            dockerfile: Dockerfile
+            dockerfile: dockerfile
         restart: unless-stopped
         working_dir: /var/www/
         volumes:

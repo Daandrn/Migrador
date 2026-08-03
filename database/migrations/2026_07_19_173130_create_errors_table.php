@@ -13,7 +13,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('verify_types', function (Blueprint $table) {
-            $table->id();
+            $table->increments('id');
             $table->text('description')->nullable(false);
             $table->boolean('active')->nullable(false)->default(true);
             $table->timestamps();
@@ -36,8 +36,8 @@ return new class extends Migration
         
         Schema::create('verify_errors', function (Blueprint $table) {
             $table->id();
-            $table->text('data')->nullable(false);
-            $table->integer('type_id')->nullable(false);
+            $table->jsonb('data')->nullable(false);
+            $table->unsignedInteger('type_id', false)->nullable(false);
             $table->timestamps();
 
             $table->index('type_id');

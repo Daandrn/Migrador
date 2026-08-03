@@ -5,7 +5,6 @@ namespace App\Services;
 use App\DTO\Check\CheckDto;
 use App\DTO\Check\InsertCheckDto;
 use App\DTO\Check\UpdateCheckDto;
-use App\Helpers\SqlValidator;
 use App\Models\Check;
 use App\Repositories\CheckRepository;
 use App\Types\SqlQuery;
@@ -16,8 +15,6 @@ class CheckService
 {
     public function __construct(
         protected CheckRepository $checkRepository,
-        protected SqlValidator $sqlValidator,
-        protected ClientService $clientService,
     ) {
         //
     }
@@ -51,7 +48,7 @@ class CheckService
         $validatedDto = new InsertCheckDto(
             description: $dto->description,
             type_id: $dto->type_id,
-            sql_query: new SqlQuery($dto->sql_query),
+            sql_query: $dto->sql_query,
             active: $dto->active,
         );
 

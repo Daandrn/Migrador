@@ -35,7 +35,7 @@ Crie o arquivo `.env` a partir do arquivo de exemplo.
 ### Linux
 
 ```bash
-cp .env-example .env
+cp .env.example .env
 ```
 
 Abra o arquivo `.env` e altere as configurações necessárias.

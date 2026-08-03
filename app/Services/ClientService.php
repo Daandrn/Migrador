@@ -184,7 +184,7 @@ class ClientService
             $message = strtolower($error->getMessage());
 
             $unknownHost = str_contains($message, 'could not translate host name')
-                || str_contains($message, 'Name or service not known');
+                || str_contains($message, 'name or service not known');
             $invalidUserOrPassword = str_contains($message, 'password authentication failed for user');
             $unknowDatabase = str_contains($message, 'database') && str_contains($message, 'does not exist');
 

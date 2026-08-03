@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('checks', function (Blueprint $table) {
             $table->id();
             $table->string('description', 100)->nullable(false);
-            $table->integer('type_id')->nullable(false);
+            $table->unsignedInteger('type_id', false)->nullable(false);
             $table->text('sql_query')->nullable(false);
             $table->boolean('active')->nullable(false)->default(true);
             $table->timestamps();

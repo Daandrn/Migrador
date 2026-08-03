@@ -18,7 +18,6 @@ class ClientController extends Controller
 {
     public function __construct(
         protected ClientService $service,
-        protected ClientService $clientService,
     ) {
         //
     }   
@@ -88,7 +87,7 @@ class ClientController extends Controller
         );
         
         $response = ApiResponse::make(
-            success: false,
+            success: true,
             message: 'Cliente atualizado com sucesso!',
             data: [
                 'client' => $client
@@ -140,9 +139,9 @@ class ClientController extends Controller
     public function userVerify(int $id): JsonResponse
     {
         try {
-            $client = $this->clientService->find(id: $id);
+            $client = $this->service->find(id: $id);
             
-            $this->clientService->validAndConnect(client: $client);
+            $this->service->validAndConnect(client: $client);
 
             $response = ApiResponse::make(
                 success: true,
@@ -153,7 +152,7 @@ class ClientController extends Controller
             $response = ApiResponse::make(
                 success: false,
                 message: 'Erro durante a verificação do usuário: ' . $error->getMessage(),
-                statusCode: 200
+                statusCode: 422
             );
         }
 

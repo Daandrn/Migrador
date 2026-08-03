@@ -74,7 +74,8 @@ Todas as respostas da API seguem o mesmo padrão.
             "field": null,
             "details": null
         }
-    ]
+    ],
+    "statusCode": 200
 }
 ```
 
@@ -154,5 +155,18 @@ Cada erro possui a seguinte estrutura:
 As consultas SQL executadas em bancos externos passam por validações antes da execução.
 
 O usuário utilizado para conexão com o banco externo DEVE possuir apenas permissões de leitura.
+
+## Usuário sugerido 
+
+Sugerimos criar o usuário migrador no banco de dados destino, atribuindo somente as permissões aos schemas especificos, bem como somente a permissão apenas para select.
+
+``` bash -> psql
+CREATE ROLE migrador
+LOGIN
+PASSWORD 'migrador@migrador';
+
+GRANT USAGE ON SCHEMA public TO migrador;
+GRANT SELECT ON ALL TABLES IN SCHEMA public TO migrador;
+```
 
 ---

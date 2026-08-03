@@ -7,5 +7,9 @@ use App\Types\SqlQuery;
 
 interface CheckExecutorInterface
 {
-    public function run(Client $client, array $checks);
+
+    /**
+     * @var SqlQuery[] $checks
+     */
+    public function run(Client $client, array $checks): void;
 }

@@ -2,10 +2,11 @@
 
 namespace App\Repositories;
 
+use App\Contracts\VerifyErrorRepositoryInterface;
 use App\Models\VerifyError;
 use Exception;
 
-class VerifyErrorRepository
+class VerifyErrorRepository implements VerifyErrorRepositoryInterface
 {
     public function __construct(
         protected VerifyError $model,
@@ -13,11 +14,11 @@ class VerifyErrorRepository
         //
     }
 
-    public function create(object|array $data)
+    public function create(object|array $data, int $type)
     {
         return $this->model->create([
-            'data' => json_encode($data),
-            'type_id' => 1,
+            'data' => json_encode($data, JSON_THROW_ON_ERROR),
+            'type_id' => $type,
         ]);
     }
     
@@ -29,7 +30,7 @@ class VerifyErrorRepository
             ->when(!empty($types), function ($query) use ($types) {
                 $query->whereIn('verify_errors.type_id', $types);
             })
-            ->orderBy('id');
+            ->orderBy('verify_errors.id');
         
         return $query->get(
                 ['verify_errors.id', 'verify_errors.data', 'verify_errors.type_id', 'verify_types.description as description_type']

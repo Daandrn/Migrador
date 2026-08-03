@@ -16,12 +16,6 @@ use App\Http\Requests\Api\Check\{
     StoreCheckRequest,
     UpdateCheckRequest,
 };
-use App\Models\{
-    Check,
-};
-use App\Repositories\{
-    VerifyErrorRepository,
-};
 use App\Services\CheckService;
 use App\Services\ClientService;
 use Illuminate\Http\{
@@ -34,8 +28,6 @@ class CheckController extends Controller
 {
     public function __construct(
         protected CheckExecutor $checkExecutor,
-        protected VerifyErrorRepository $verifyErrorRepository,
-        protected Check $check,
         protected CheckService $checkService,
         protected ClientService $clientService,
     ) {
@@ -173,8 +165,6 @@ class CheckController extends Controller
                 message: 'Verificações concluídas!',
             );
         } catch (\Throwable $error) {
-            DB::rollBack();
-
             $response = ApiResponse::make(
                 success: false,
                 message: 'Falha ao realizar verificações: ' . $error->getMessage(),

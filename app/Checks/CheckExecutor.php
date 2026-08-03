@@ -3,6 +3,7 @@
 namespace App\Checks;
 
 use App\Contracts\CheckExecutorInterface;
+use App\Models\Check;
 use App\Models\Client;
 use App\Repositories\VerifyErrorRepository;
 use App\Services\CheckService;
@@ -10,14 +11,10 @@ use App\Services\ClientService;
 use App\Types\SqlQuery;
 use Illuminate\Database\Connection;
 use Exception;
+use Illuminate\Support\Facades\DB;
 
 class CheckExecutor implements CheckExecutorInterface
 {
-    /**
-     * @var SqlQuery[] $queryChecks
-     */
-    protected array $queryChecks;
-
     public function __construct(
         protected VerifyErrorRepository $verifyErrorRepository,
         protected ClientService $clientService,
@@ -25,58 +22,53 @@ class CheckExecutor implements CheckExecutorInterface
     ) {
         //
     }
-    
-    protected function add(SqlQuery $queryCheck)
-    {
-        $this->queryChecks[] = $queryCheck;
-        
-        return;
-    }
 
-    public function run(Client $client, array $checks)
+    /**
+     * @var Check[] $checks
+     */
+    public function run(Client $client, array $checks): void
     {
         if (empty($checks)) {
             throw new Exception("Não há checagens para serem executadas, verifique!");
         }
         
-        foreach ($checks as $check) {
-            $this->add(
-                queryCheck: new SqlQuery($check['sql_query'])
-            );
-        }
-        
         $clientConn = $this->clientService->validAndConnect(client: $client);
 
-        foreach ($this->queryChecks as $check) {
-           if (!$this->executeInClient(clientConn: $clientConn, sql_query: new SqlQuery($check))) {
-                throw new Exception('Não foi possível gravar o registro.');
-           }
+        foreach ($checks as $check) {
+            $data = $this->executeInClient(clientConn: $clientConn, sql_query: new SqlQuery($check['sql_query']));
+            
+            if (empty($data)) {
+                continue;
+            }
+
+            $check_type = $check['type_id'];
+
+            DB::transaction(
+                function () use ($data, $check_type) 
+                {
+                    foreach ($data as $item) {
+                        $saved = $this->verifyErrorRepository->create(
+                            data: $item,
+                            type: $check_type,
+                        );
+
+                        if (!$saved) {
+                            throw new Exception('Não foi possível gravar o registro: ' . json_encode($item, JSON_THROW_ON_ERROR));
+                        }
+                    }
+                }
+            );
+
+            unset($data);
         };
 
-        unset($this->queryChecks);
+        unset($checks);
 
         return;
     }
 
-    protected function executeInClient(Connection $clientConn, SqlQuery $sql_query): true
+    protected function executeInClient(Connection $clientConn, SqlQuery $sql_query): array
     {
-        $data = $clientConn->select(query: $sql_query);
-
-        if (empty($data)) {
-            throw new Exception('Não foram localizados registros para serem lançados.');
-        }
-
-        
-        foreach ($data as $item) {
-            $saved = $this->verifyErrorRepository->create(data: $item);
-
-            if (!$saved) {
-                throw new Exception('Não foi possível gravar o registro: ' . json_encode($item));
-            }
-        }
-
-        unset($data);
-
-        return true;
+        return $clientConn->select(query: $sql_query);
     }
 }

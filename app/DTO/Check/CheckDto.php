@@ -28,7 +28,7 @@ readonly class CheckDto
             id: $id,
             description: $description,
             type_id: $type_id,
-            sql_query: new SqlQuery($sql_query),
+            sql_query: $sql_query,
             active: $active,
         );
     }
