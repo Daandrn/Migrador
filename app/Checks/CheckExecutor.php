@@ -41,15 +41,15 @@ class CheckExecutor implements CheckExecutorInterface
                 continue;
             }
 
-            $check_type = $check['type_id'];
+            $typeId = $check['type_id'];
 
             DB::transaction(
-                function () use ($data, $check_type) 
+                function () use ($data, $typeId) 
                 {
                     foreach ($data as $item) {
                         $saved = $this->verifyErrorRepository->create(
                             data: $item,
-                            type: $check_type,
+                            type: $typeId,
                         );
 
                         if (!$saved) {
